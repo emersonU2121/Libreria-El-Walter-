@@ -104,8 +104,8 @@
 <body>
     <div class="header">
         <div class="header-left">
-            <img src="W.png" alt="Logo Librería El Walter" class="logo-img"
-                 style="width: 50px; height: 50px;">
+           <img src="{{ asset('images/W.png') }}" alt="Logo Librería El Walter" class="logo-img" style="width: 50px; height: 50px;">
+
             <div class="logo">Librería "El Walter"</div>
         </div>
         
@@ -119,7 +119,7 @@
         </div>
         
         <div class="admin-profile">
-        <img src="admin-avatar.png" alt="Foto perfil" class="profile-img" style="width: 30px; height: 30px;">
+<img src="{{ asset('images/admin-avatar.png') }}" alt="Foto perfil" class="profile-img" style="width: 30px; height: 30px;">
             <div class="admin-label">Administrador</div>
         </div>
     </div>

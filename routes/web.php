@@ -11,21 +11,36 @@ Route::get('/menu', function () {
     return view('inicio');
 })->name('inicio');
 
-// FORMULARIO (GET) — usa UsuarioController@create
+// ====== USUARIOS ======
+
+// Formulario de registro (GET)
 Route::get('/usuarios/registrar', [UsuarioController::class, 'create'])
      ->name('usuarios.registrar');
 
-// GUARDAR (POST) — usa UsuarioController@store
+// Guardar usuario (POST)
 Route::post('/usuarios', [UsuarioController::class, 'store'])
      ->name('usuarios.store');
 
-// Mostrar usuarios (tabla sencilla)
+// Editar usuario (PUT)  <-- usado por el modal Editar
+Route::put('/usuarios/{id}', [UsuarioController::class, 'update'])->name('usuarios.update');
+
+
+// Dar de baja (PUT)     <-- usado por el modal Confirmación (cuando está activo)
+Route::put('/usuarios/{id}/inactivar', [UsuarioController::class, 'inactivo'])
+     ->name('usuarios.inactivo');
+
+// Reactivar (PUT)       <-- usado por el modal Confirmación (cuando está inactivo)
+Route::put('/usuarios/{id}/activar', [UsuarioController::class, 'activo'])
+     ->name('usuarios.activo');
+
+// Mostrar usuarios (tabla)
 Route::get('/usuarios/mostrar', function () {
     $usuarios = Usuario::all();
     return view('usuarios.mostrar', compact('usuarios'));
 })->name('usuarios.mostrar');
 
-// Login
+// ====== AUTH ======
+
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');

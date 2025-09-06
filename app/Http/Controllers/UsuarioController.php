@@ -8,201 +8,216 @@ use Illuminate\Support\Facades\Validator;
 
 class UsuarioController extends Controller
 {
-    // Muestra el formulario (vista Blade)
+    /**
+     * Mostrar formulario de registro (vista Blade).
+     */
     public function create()
     {
         return view('usuarios.registrar');
     }
 
-    // API: lista JSON (opcional)
+    /**
+     * (Opcional) Listado JSON de usuarios (modo API).
+     */
     public function index()
     {
-        $usuario = Usuario::all();
+        $usuarios = Usuario::all();
 
-        if ($usuario->isEmpty()) {
+        if ($usuarios->isEmpty()) {
             return response()->json(['message' => 'No se encontraron usuarios'], 200);
         }
-        return response()->json($usuario, 200);
+
+        return response()->json($usuarios, 200);
     }
 
-    // Guarda (sirve para Web y API)
-    public function store(Request $request){
-        $validator = Validator::make($request->all(),[
+    /**
+     * Guardar un usuario (sirve para Web y API).
+     */
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
             'nombre'     => 'required|string|max:255',
             'correo'     => 'required|string|email|max:255|unique:usuario,correo',
             'contraseña' => 'required|string|min:12',
             'rol'        => 'required|string|max:50',
         ]);
 
-        if($validator->fails()){
-           if (!$request->expectsJson()) {
-               return back()->withErrors($validator)->withInput();
-           }
-           return response()->json([
-               'message' => 'Error de validacion',
-               'errors'  => $validator->errors(),
-               'status'  => 400
-           ], 400);
-        }
-
-        $usuario = Usuario::create([
-            'nombre'     => $request->input('nombre'),
-            'correo'     => $request->input('correo'),
-            'contraseña' => bcrypt($request->input('contraseña')),
-            'rol'        => $request->input('rol'),
-        ]);
-
-        if(!$usuario){
+        if ($validator->fails()) {
             if (!$request->expectsJson()) {
-                return back()->with('error', 'Error al crear el usuario')->withInput();
+                return back()->withErrors($validator)->withInput();
             }
-            return response()->json(['message' => 'Error al crear el usuario','status'=>500], 500);
+            return response()->json([
+                'message' => 'Error de validacion',
+                'errors'  => $validator->errors(),
+                'status'  => 400,
+            ], 400);
         }
+
+        $usuario = new Usuario();
+        $usuario->nombre = $request->input('nombre');
+        $usuario->correo = $request->input('correo');
+        // Evitar acceder con propiedad que contiene 'ñ'
+        $usuario->setAttribute('contraseña', bcrypt($request->input('contraseña')));
+        $usuario->rol    = $request->input('rol');
+        $usuario->activo = true;
+        $usuario->save();
 
         if (!$request->expectsJson()) {
-            return redirect()->route('usuarios.registrar')->with('ok', 'Usuario creado exitosamente');
+            return redirect()
+                ->route('usuarios.registrar')
+                ->with('ok', 'Usuario creado exitosamente');
         }
 
         return response()->json([
             'message' => 'Usuario creado exitosamente',
             'usuario' => $usuario,
-            'status'  => 201
+            'status'  => 201,
         ], 201);
     }
 
-    // API: mostrar uno (opcional)
-    public function show($id){
+    /**
+     * (Opcional) Mostrar 1 usuario en JSON (modo API).
+     */
+    public function show($id)
+    {
         $usuario = Usuario::find($id);
-        if(!$usuario){
-            $data = [
-                'message' => 'Usuario no encontrado',
-                'status' => 404
-            ];
-            return response()->json($data, 404);
+        if (!$usuario) {
+            return response()->json(['message' => 'Usuario no encontrado', 'status' => 404], 404);
         }
-        
-        $data = [
-            'message' => $usuario,
-            'status' => 200
 
-        ];
-        return response()->json($data, 200);
-
-
+        return response()->json(['message' => $usuario, 'status' => 200], 200);
     }
 
-    public function inactivo($id){
+    /**
+     * Editar usuario (desde modal). Web (redirect) y API (JSON).
+     */
+    public function update(Request $request, $id)
+    {
         $usuario = Usuario::find($id);
-        if(!$usuario){
-            $data=[
-                'message' => 'No se ha podido inactivar, usuario no encontrado',
-                'status'=>404
-            ];
-            return response()->json($data,404);
-        }
-        $usuario->activo = false;
-        $usuario->save();
-
-        $data = [
-            'message' => 'Usuario marcado como inactivo exitosamente',
-            'status' => 200
-        ];
-
-        return response()->json($data, 200);
-    }
-
-    // API: update completo (opcional)
-    public function update(Request $request, $id) {
-        $usuario = Usuario::find($id);
-        if(!$usuario){
-            return response()->json(['message' => 'Usuario no encontrado','status' => 404], 404);
+        if (!$usuario) {
+            if (!$request->expectsJson()) {
+                return back()->with('error', 'Usuario no encontrado');
+            }
+            return response()->json(['message' => 'Usuario no encontrado', 'status' => 404], 404);
         }
 
-        $validator = Validator::make($request->all(),[
-            'nombre'     => 'sometimes|required|string|max:255',
-            'correo'     => 'sometimes|required|string|email|max:255|unique:usuario,correo,'.$id.',idusuario', // <-- idusuario
-            'contraseña' => 'sometimes|required|string|min:12',
-            'rol'        => 'sometimes|required|string|max:50',
+        $validator = Validator::make($request->all(), [
+            'nombre'     => ['required','string','max:255'],
+            'correo'     => ['required','string','email','max:255','unique:usuario,correo,'.$id.',idusuario'],
+            'rol'        => ['nullable','string','max:50'],
+            'contraseña' => ['nullable','string','min:12'],
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
+            if (!$request->expectsJson()) {
+                return back()->withErrors($validator)->withInput();
+            }
             return response()->json([
                 'message' => 'Error de validacion',
                 'errors'  => $validator->errors(),
-                'status'  => 400
+                'status'  => 400,
             ], 400);
         }
 
-        $usuario->nombre     = $request->has('nombre')     ? $request->nombre     : $usuario->nombre;
-        $usuario->correo     = $request->has('correo')     ? $request->correo     : $usuario->correo;
-        $usuario->rol        = $request->has('rol')        ? $request->rol        : $usuario->rol;
-        $usuario->contraseña = $request->has('contraseña') ? bcrypt($request->contraseña) : $usuario->contraseña;
-
+        $usuario->nombre = $request->input('nombre');
+        $usuario->correo = $request->input('correo');
+        if ($request->filled('rol')) {
+            $usuario->rol = $request->input('rol');
+        }
+        if ($request->filled('contraseña')) {
+            $usuario->setAttribute('contraseña', bcrypt($request->input('contraseña')));
+        }
         $usuario->save();
 
+        if (!$request->expectsJson()) {
+            return back()->with('ok', 'Usuario actualizado correctamente');
+        }
+
         return response()->json([
-            'message' => 'Usuario actualizado exitosamente',
+            'message' => 'Usuario actualizado',
             'usuario' => $usuario,
-            'status'  => 200
+            'status'  => 200,
         ], 200);
     }
 
-    // API: update parcial (opcional)
-    public function updatePartial(Request $request, $id){
+    /**
+     * (Opcional) Actualización parcial (API).
+     */
+    public function updatePartial(Request $request, $id)
+    {
         $usuario = Usuario::find($id);
-        if(!$usuario){
-            return response()->json(['message' => 'Usuario no encontrado','status' => 404], 404);
+        if (!$usuario) {
+            return response()->json(['message' => 'Usuario no encontrado', 'status' => 404], 404);
         }
 
-        $validator = Validator::make($request->all(),[
-            'nombre'     => 'sometimes|required|string|max:255',
-            'correo'     => 'sometimes|required|string|email|max:255|unique:usuario,correo,'.$id.',idusuario', // <-- idusuario
-            'contraseña' => 'sometimes|required|string|min:12',
-            'rol'        => 'sometimes|required|string|max:50',
+        $validator = Validator::make($request->all(), [
+            'nombre'     => ['sometimes','required','string','max:255'],
+            'correo'     => ['sometimes','required','string','email','max:255','unique:usuario,correo,'.$id.',idusuario'],
+            'rol'        => ['sometimes','nullable','string','max:50'],
+            'contraseña' => ['sometimes','nullable','string','min:12'],
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             return response()->json([
                 'message' => 'Error de validacion',
                 'errors'  => $validator->errors(),
-                'status'  => 400
+                'status'  => 400,
             ], 400);
         }
 
-        if($request->has('nombre'))     $usuario->nombre     = $request->nombre;
-        if($request->has('correo'))     $usuario->correo     = $request->correo;
-        if($request->has('rol'))        $usuario->rol        = $request->rol;
-        if($request->has('contraseña')) $usuario->contraseña = bcrypt($request->contraseña);
+        if ($request->has('nombre'))     $usuario->nombre = $request->input('nombre');
+        if ($request->has('correo'))     $usuario->correo = $request->input('correo');
+        if ($request->has('rol'))        $usuario->rol    = $request->input('rol');
+        if ($request->has('contraseña')) $usuario->setAttribute('contraseña', bcrypt($request->input('contraseña')));
 
         $usuario->save();
 
         return response()->json([
             'message' => 'Usuario actualizado parcialmente',
             'usuario' => $usuario,
-            'status'  => 200
+            'status'  => 200,
         ], 200);
-   }
-
-   public function activo($id){
-    $usuario = Usuario::find($id);
-
-    if(!$usuario){
-        $data =[
-            'message' => 'Usuario no encontrado',
-            'status' => 404
-        ];
-        return response()->json($data, 404);
     }
 
-    $usuario->activo = true;
-    $usuario->save();
+    /**
+     * Marcar usuario como inactivo (Dar de baja).
+     * Soporta Web (redirect) y API (JSON).
+     */
+    public function inactivo($id)
+    {
+        $usuario = Usuario::find($id);
+        if (!$usuario) {
+            return request()->expectsJson()
+                ? response()->json(['message' => 'Usuario no encontrado', 'status' => 404], 404)
+                : back()->with('error', 'Usuario no encontrado');
+        }
 
-    $data = [
-        'message' => 'Usuario restaurado exitosamente',
-        'status' => 200
-    ];
+        $usuario->activo = false;
+        $usuario->save();
 
-    return response()->json($data, 200);
-}
+        return request()->expectsJson()
+            ? response()->json(['message' => 'Usuario dado de baja', 'status' => 200], 200)
+            : back()->with('ok', 'Usuario dado de baja');
+    }
 
+    /**
+     * Marcar usuario como activo (Reactivar).
+     * Soporta Web (redirect) y API (JSON).
+     */
+    public function activo($id)
+    {
+        $usuario = Usuario::find($id);
+        if (!$usuario) {
+            return request()->expectsJson()
+                ? response()->json(['message' => 'Usuario no encontrado', 'status' => 404], 404)
+                : back()->with('error', 'Usuario no encontrado');
+        }
+
+        $usuario->activo = true;
+        $usuario->save();
+
+        return request()->expectsJson()
+            ? response()->json(['message' => 'Usuario reactivado', 'status' => 200], 200)
+            : back()->with('ok', 'Usuario reactivado');
+    }
 }

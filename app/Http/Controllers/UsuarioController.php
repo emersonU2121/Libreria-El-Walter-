@@ -84,20 +84,21 @@ class UsuarioController extends Controller
 
     }
 
-    public function destroy($id){
+    public function inactivo($id){
         $usuario = Usuario::find($id);
 
         if(!$usuario){
             $data=[
-                'message' => 'No se ha podido eliminar, usuario no eonctrado',
+                'message' => 'No se ha podido inactivar, usuario no encontrado',
                 'status'=>404
             ];
             return response()->json($data,404);
         }
-        $usuario->delete();
+        $usuario->activo = false;
+        $usuario->save();
 
         $data = [
-            'message' => 'Usuario eliminado exitosamente',
+            'message' => 'Usuario marcado como inactivo exitosamente',
             'status' => 200
         ];
 
@@ -193,5 +194,27 @@ class UsuarioController extends Controller
 
 
    }
+
+   public function activo($id){
+    $usuario = Usuario::find($id);
+
+    if(!$usuario){
+        $data =[
+            'message' => 'Usuario no encontrado',
+            'status' => 404
+        ];
+        return response()->json($data, 404);
+    }
+
+    $usuario->activo = true;
+    $usuario->save();
+
+    $data = [
+        'message' => 'Usuario restaurado exitosamente',
+        'status' => 200
+    ];
+
+    return response()->json($data, 200);
+}
 
 }

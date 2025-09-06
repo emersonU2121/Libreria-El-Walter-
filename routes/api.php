@@ -16,4 +16,6 @@ Route::put('/usuario/{id}', [UsuarioController::class, 'update']);
 
 Route::patch('/usuario/{id}', [UsuarioController::class, 'updatePartial']);
 
-Route::delete('/usuario/{id}', [UsuarioController::class, 'destroy']);
+Route::put('/usuario/activo/{id}', [UsuarioController::class, 'activo']);
+
+Route::delete('/usuario/{id}', [UsuarioController::class, 'inactivo']);

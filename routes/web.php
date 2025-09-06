@@ -3,30 +3,33 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
+use App\Models\Usuario;
+use App\Http\Controllers\UsuarioController;
 
-// Página principal -> bienvenida
+// Página principal
 Route::get('/menu', function () {
     return view('inicio');
 })->name('inicio');
 
-// Registrar usuario -> formulario
-Route::get('/usuarios/registrar', function () {
-    return view('usuarios.registrar');
-})->name('usuarios.registrar');
+// FORMULARIO (GET) — usa UsuarioController@create
+Route::get('/usuarios/registrar', [UsuarioController::class, 'create'])
+     ->name('usuarios.registrar');
 
-// Mostrar usuarios -> tabla
+// GUARDAR (POST) — usa UsuarioController@store
+Route::post('/usuarios', [UsuarioController::class, 'store'])
+     ->name('usuarios.store');
+
+// Mostrar usuarios (tabla sencilla)
 Route::get('/usuarios/mostrar', function () {
-    $usuarios = User::all();
+    $usuarios = Usuario::all();
     return view('usuarios.mostrar', compact('usuarios'));
 })->name('usuarios.mostrar');
 
-// Formulario de login
+// Login
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
 
-// Procesar login
 Route::post('/login', function (Request $request) {
     $credentials = $request->only('email', 'password');
 
@@ -40,7 +43,6 @@ Route::post('/login', function (Request $request) {
     ]);
 })->name('login.post');
 
-// Cerrar sesión
 Route::get('/logout', function (Request $request) {
     Auth::logout();
     $request->session()->invalidate();

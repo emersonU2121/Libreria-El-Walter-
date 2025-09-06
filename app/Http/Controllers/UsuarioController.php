@@ -62,4 +62,136 @@ class UsuarioController extends Controller
 
         return response()->json($data, 201);
     }
+
+    public function show($id){
+        $usuario = Usuario::find($id);
+
+        if(!$usuario){
+            $data = [
+                'message' => 'Usuario no encontrado',
+                'status' => 404
+            ];
+            return response()->json($data, 404);
+        }
+        
+        $data = [
+            'message' => $usuario,
+            'status' => 200
+
+        ];
+        return response()->json($data, 200);
+
+
+    }
+
+    public function destroy($id){
+        $usuario = Usuario::find($id);
+
+        if(!$usuario){
+            $data=[
+                'message' => 'No se ha podido eliminar, usuario no eonctrado',
+                'status'=>404
+            ];
+            return response()->json($data,404);
+        }
+        $usuario->delete();
+
+        $data = [
+            'message' => 'Usuario eliminado exitosamente',
+            'status' => 200
+        ];
+
+        return response()->json($data, 200);
+    }
+
+    public function update(Request $request, $id) {
+        $usuario = Usuario::find($id);
+
+        if(!$usuario){
+            $data =[
+                'message' => 'Usuario no encontrado',
+                'status' => 404
+            ];
+            return response()->json($data, 404);
+        }
+        $validator = Validator::make($request->all(),[
+            'nombre' => 'sometimes|required|string|max:255',
+            'correo' => 'sometimes|required|string|email|max:255|unique:usuario,correo,'.$id.',idUsuario',
+            'contraseña' => 'sometimes|required|string|min:12',
+            'rol' => 'sometimes|required|string|max:50',
+        ]);
+
+        if($validator->fails()){
+            $data = [
+                'message' => 'Error de validacion',
+                'errors' => $validator->errors(),
+                'status' => 400
+            ];
+            return response()->json($data, 400);
+        }
+
+       $usuario->nombre = $request->has('nombre') ? $request->nombre : $usuario->nombre;
+       $usuario->correo = $request->has('correo') ? $request->correo : $usuario->correo;
+       $usuario->rol = $request->has('rol') ? $request->rol : $usuario->rol;
+       $usuario->contraseña = $request->has('contraseña') ? bcrypt($request->contraseña) : $usuario->contraseña;
+
+       $usuario->save();
+
+       $data = [
+        'message' => 'Usuario actualizado exitosamente',
+        'usuario' => $usuario,
+        'status' => 200
+       ];
+
+       return response()->json($data, 200);
+   }
+
+   public function updatePartial(Request $request, $id){
+
+    $usuario = Usuario::find($id);
+
+    if(!$usuario){
+        $data =[
+            'message' => 'Usuario no encontrado',
+            'status' => 404
+        ];
+        return response()->json($data, 404);
+    }
+
+    $validator = Validator::make($request->all(),[
+        'nombre' => 'sometimes|required|string|max:255',
+        'correo' => 'sometimes|required|string|email|max:255|unique:usuario,correo,'.$id.',idUsuario',
+        'contraseña' => 'sometimes|required|string|min:12',
+        'rol' => 'sometimes|required|string|max:50',
+    ]);
+
+    if($validator->fails()){
+        $data = [
+            'message' => 'Error de validacion',
+            'errors' => $validator->errors(),
+            'status' => 400
+        ];
+        return response()->json($data, 400);
+    }
+
+    if($request->has('nombre')){
+        $usuario->nombre = $request->nombre;
+    }
+
+    if($request->has('correo')){
+        $usuario->correo = $request->correo;
+    }
+
+    if($request->has('rol')){
+        $usuario->rol = $request->rol;
+    }
+
+    if($request->has('contraseña')){
+        $usuario->contraseña = bcrypt($request->contraseña);
+    }
+    $usuario->save();
+
+
+   }
+
 }

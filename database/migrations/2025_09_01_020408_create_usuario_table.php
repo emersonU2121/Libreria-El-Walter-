@@ -16,7 +16,8 @@ public function up()
         $table->string('nombre');           
         $table->string('correo')->unique(); 
         $table->string('contraseña');       
-        $table->string('rol');              
+        $table->string('rol');
+        $table->boolean('activo')->default(true);              
         $table->timestamps();               
     });
 }

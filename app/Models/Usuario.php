@@ -18,5 +18,6 @@ class Usuario extends Model
         'correo',
         'contraseña',
         'rol',
+        'activo',
     ];
 }

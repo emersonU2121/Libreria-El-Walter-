@@ -1,132 +1,103 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Librería El Walter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            font-family: 'Arial';
             background-color: #f5f7fa;
-            margin: 0;
-            padding: 0;
-            color: #000;
         }
-
-        .header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 15px 20px;
+        .navbar {
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .dropdown-menu a:hover {
+            background-color: #3498db !important;
+            color: white !important;
+        }
+        #contenido {
+            min-height: 70vh;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
         }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .nav-menu {
-            display: flex;
-            gap: 20px;
-        }
-
-        .nav-item {
-            color: white;
-            text-decoration: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-
-        .nav-item:hover {
-            background-color: #3498db;
-        }
-
-        .main-content {
-            max-width: 800px;
-            margin: 30px auto;
-            padding: 20px;
+        .compact-form {
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
         }
-
-        .welcome-title {
+        .compact-form h1 {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 15px;
             color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-            margin-top: 0;
-        }
-
-        .admin-profile {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .admin-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #3498db;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .admin-label {
-            font-size: 15px;
-        }
-
-        .admin-profile:hover {
-            transform: translateY(-2px);
-        }
-
-        .admin-profile:hover .admin-icon {
-            background-color: #2980b9;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-left">
-            <img src="W.png" alt="Logo Librería El Walter" class="logo-img"
-                 style="width: 50px; height: 50px;">
-            <div class="logo">Librería "El Walter"</div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ route('inicio') }}">
+                <img src="{{ asset('images/W.png') }}" alt="Logo" width="40" height="40" class="me-2">
+                Librería "El Walter"
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+                data-bs-target="#navbarNav" aria-controls="navbarNav" 
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="#">Marcas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Productos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Categoría</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Compras</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Ventas</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="usuariosDropdown" 
+                           role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Usuarios
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="usuariosDropdown">
+    <li><a class="dropdown-item" href="{{ route('usuarios.registrar') }}">Registrar usuario</a></li>
+    <li><a class="dropdown-item" href="{{ route('usuarios.mostrar') }}">Mostrar usuarios</a></li>
+</ul>
+
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="perfilDropdown"
+                           role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="me-2">👤</span> 
+                            <span>
+                                @php $rol = "Invitado"; @endphp
+                                {{ $rol }}
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="perfilDropdown">
+                           @if(Auth::check())
+    <li><a class="dropdown-item" href="{{ route('logout') }}">Cerrar sesión</a></li>
+@else
+    <li><a class="dropdown-item" href="{{ route('login') }}">Iniciar sesión</a></li>
+@endif
+
+                        </ul>
+                    </li>
+                </ul>
+            </div>
         </div>
-        
-        <div class="nav-menu">
-            <a href="#" class="nav-item">Marcas</a>
-            <a href="#" class="nav-item">Productos</a>
-            <a href="#" class="nav-item">Categoría</a>
-            <a href="#" class="nav-item">Compras</a>
-            <a href="#" class="nav-item">Ventas</a>
-            <a href="#" class="nav-item">Usuarios</a>
-        </div>
-        
-        <div class="admin-profile">
-        <img src="admin-avatar.png" alt="Foto perfil" class="profile-img" style="width: 30px; height: 30px;">
-            <div class="admin-label">Administrador</div>
-        </div>
+    </nav>
+
+    <!-- Contenido dinámico -->
+    <div id="contenido" class="container mt-5">
+        @yield('contenido')
     </div>
 
-    <div class="main-content">
-        <h1 class="welcome-title">Bienvenido a Librería "El Walter"</h1>
-        <p>Cojutepeque, Cuscatlan Sur</p>
-    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

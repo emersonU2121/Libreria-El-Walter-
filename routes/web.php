@@ -1,7 +1,66 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Usuario;
+use App\Http\Controllers\UsuarioController;
 
+// Página principal
 Route::get('/menu', function () {
-    return view('menu');  // Carga la vista menu.blade.php
-});
+    return view('inicio');
+})->name('inicio');
+
+// ====== USUARIOS ======
+
+// Formulario de registro (GET)
+Route::get('/usuarios/registrar', [UsuarioController::class, 'create'])
+     ->name('usuarios.registrar');
+
+// Guardar usuario (POST)
+Route::post('/usuarios', [UsuarioController::class, 'store'])
+     ->name('usuarios.store');
+
+// Editar usuario (PUT)  <-- usado por el modal Editar
+Route::put('/usuarios/{id}', [UsuarioController::class, 'update'])->name('usuarios.update');
+
+
+// Dar de baja (PUT)     <-- usado por el modal Confirmación (cuando está activo)
+Route::put('/usuarios/{id}/inactivar', [UsuarioController::class, 'inactivo'])
+     ->name('usuarios.inactivo');
+
+// Reactivar (PUT)       <-- usado por el modal Confirmación (cuando está inactivo)
+Route::put('/usuarios/{id}/activar', [UsuarioController::class, 'activo'])
+     ->name('usuarios.activo');
+
+// Mostrar usuarios (tabla)
+Route::get('/usuarios/mostrar', function () {
+    $usuarios = Usuario::all();
+    return view('usuarios.mostrar', compact('usuarios'));
+})->name('usuarios.mostrar');
+
+// ====== AUTH ======
+
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login');
+
+Route::post('/login', function (Request $request) {
+    $credentials = $request->only('email', 'password');
+
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+        return redirect()->route('inicio')->with('success', 'Bienvenido de nuevo!');
+    }
+
+    return back()->withErrors([
+        'email' => 'Las credenciales no son correctas.',
+    ]);
+})->name('login.post');
+
+Route::get('/logout', function (Request $request) {
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect()->route('login');
+})->name('logout');

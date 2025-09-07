@@ -21,7 +21,7 @@
         </div>
     @endif
 
-    <form action="{{ route('usuarios.store') }}" method="post" autocomplete="off" novalidate>
+    <form action="{{ route('usuarios.store') }}" method="post" autocomplete="off" novalidate id="formRegistro">
         @csrf
 
         {{-- Señuelos anti-autocompletado --}}
@@ -36,14 +36,31 @@
 
         <div class="mb-3">
             <label for="correo" class="form-label">Correo Electrónico</label>
-            <input type="email" id="correo" name="correo" class="form-control"
-                   value="{{ old('correo') }}" required data-no-autofill readonly>
+            <input
+                type="email"
+                id="correo"
+                name="correo"
+                class="form-control"
+                value="{{ old('correo') }}"
+                required
+                inputmode="email"
+                placeholder="usuario@dominio.com"
+                data-no-autofill
+                readonly
+                {{-- patrón (ayuda visual); la validación real la hacemos abajo en JS --}}
+                pattern="^[^@\s]+@(gmail\.com|outlook\.com|hotmail\.com|(?:[A-Za-z0-9-]+\.)*ues\.edu\.sv)$"
+                title="Solo se permiten: gmail.com, outlook.com, hotmail.com o ues.edu.sv"
+            >
+            <div class="invalid-feedback" id="correo_error">
+                Solo se permiten correos de: <strong>gmail.com</strong>, <strong>outlook.com</strong>,
+                <strong>hotmail.com</strong> o <strong>ues.edu.sv</strong>.
+            </div>
         </div>
 
         <div class="mb-3">
             <label for="contrasena" class="form-label">Contraseña</label>
             {{-- name con ñ porque tu Controller lo valida así --}}
-            <input type="password" id="contrasena" name="contraseña" class="form-control"
+            <input type="password" id="contrassena" name="contraseña" class="form-control"
                    required autocomplete="new-password" data-no-autofill readonly>
             <small class="text-muted">Mínimo 12 caracteres.</small>
         </div>
@@ -64,11 +81,48 @@
     </form>
 </div>
 
-{{-- Evitar autocompletado: quitar readonly al enfocar --}}
+{{-- Evitar autocompletado: quitar readonly al enfocar + VALIDACIÓN DE DOMINIO --}}
 <script>
+  // Quitar readonly al enfocar (anti-autofill)
   document.querySelectorAll('[data-no-autofill]').forEach(el => {
     el.setAttribute('readonly', 'readonly');
     el.addEventListener('focus', () => el.removeAttribute('readonly'), { once: true });
   });
+
+  // Dominios permitidos exactos
+  const allowedExact = ['gmail.com', 'outlook.com', 'hotmail.com'];
+  // Aceptar ues.edu.sv y cualquier subdominio (alumno.ues.edu.sv, etc.)
+  function isAllowedDomain(domain) {
+    if (!domain) return false;
+    domain = domain.toLowerCase();
+    return allowedExact.includes(domain) || domain === 'ues.edu.sv' || domain.endsWith('.ues.edu.sv');
+  }
+
+  (function () {
+    const form   = document.getElementById('formRegistro');
+    const correo = document.getElementById('correo');
+
+    // Validación en tiempo real
+    correo.addEventListener('input', () => {
+      const parts = correo.value.trim().split('@');
+      const ok = parts.length === 2 && isAllowedDomain(parts[1]);
+      correo.classList.toggle('is-invalid', !ok && correo.value.trim() !== '');
+    });
+
+    // Bloquear envío si no cumple
+    form.addEventListener('submit', (e) => {
+      const value = correo.value.trim();
+      const parts = value.split('@');
+      const ok = parts.length === 2 && isAllowedDomain(parts[1]);
+
+      if (!ok) {
+        e.preventDefault();
+        correo.classList.add('is-invalid');
+        correo.focus();
+      } else {
+        correo.classList.remove('is-invalid');
+      }
+    });
+  })();
 </script>
 @endsection

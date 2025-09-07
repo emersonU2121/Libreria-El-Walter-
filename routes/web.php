@@ -7,7 +7,7 @@ use App\Models\Usuario;
 use App\Http\Controllers\UsuarioController;
 
 // Página principal
-Route::get('/menu', function () {
+Route::get('/', function () {
     return view('inicio');
 })->name('inicio');
 

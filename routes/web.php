@@ -45,18 +45,7 @@ Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
 
-Route::post('/login', function (Request $request) {
-    $credentials = $request->only('email', 'password');
-
-    if (Auth::attempt($credentials)) {
-        $request->session()->regenerate();
-        return redirect()->route('inicio')->with('success', 'Bienvenido de nuevo!');
-    }
-
-    return back()->withErrors([
-        'email' => 'Las credenciales no son correctas.',
-    ]);
-})->name('login.post');
+Route::post('/login', [App\Http\Controllers\LoginController::class, 'login'])->name('login.post');
 
 Route::get('/logout', function (Request $request) {
     Auth::logout();

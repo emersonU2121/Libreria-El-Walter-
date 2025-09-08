@@ -17,13 +17,13 @@
     <form action="{{ route('login.post') }}" method="post" autocomplete="off">
         @csrf
         <div class="mb-3">
-            <label for="email" class="form-label">Correo Electrónico</label>
-            <input type="email" name="email" id="email" class="form-control" required autocomplete="off">
+            <label for="correo" class="form-label">Correo Electrónico</label>
+            <input type="email" name="correo" id="correo" class="form-control" required autocomplete="off">
         </div>
 
         <div class="mb-3">
-            <label for="password" class="form-label">Contraseña</label>
-            <input type="password" name="password" id="password" class="form-control" required autocomplete="new-password">
+            <label for="contraseña" class="form-label">Contraseña</label>
+            <input type="password" name="contraseña" id="contraseña" class="form-control" required autocomplete="new-password">
         </div>
 
         <div class="d-flex justify-content-between">

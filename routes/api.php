@@ -4,6 +4,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\LoginController;
+
+use App\Http\Controllers\AuthController;
 
 Route::get('/usuario', [UsuarioController::class, 'index']);
 
@@ -19,3 +22,9 @@ Route::patch('/usuario/{id}', [UsuarioController::class, 'updatePartial']);
 Route::put('/usuario/activo/{id}', [UsuarioController::class, 'activo']);
 
 Route::delete('/usuario/{id}', [UsuarioController::class, 'inactivo']);
+
+
+
+// Rutas de autenticación API
+Route::post('/login', [LoginController::class, 'login']);
+Route::middleware('auth:sanctum')->post('/logout', [LoginController::class, 'logout']);

@@ -20,12 +20,12 @@ class LoginController extends Controller
         // Intentar login por correo
 
         if ($request->filled('correo') && Auth::attempt(['correo' => $request->correo, 'password' => $request->contraseña])) {
-            return redirect()->intended('/'); // Cambia '/' por la ruta que desees
+           return redirect()->route('inicio'); // Cambia '/' por la ruta que desees
         }
 
         // Intentar login por nombre
         if ($request->filled('nombre') && Auth::attempt(['nombre' => $request->nombre, 'password' => $request->contraseña])) {
-            return redirect()->intended('/');
+           return redirect()->route('inicio');
         }
 
         return back()->withErrors(['correo' => 'Credenciales incorrectas'])->withInput();

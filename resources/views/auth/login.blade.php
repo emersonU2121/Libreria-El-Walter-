@@ -70,7 +70,7 @@
             @csrf
             <div class="mb-3">
                 <label for="correo" class="form-label">Correo Electrónico</label>
-                <input type="email" name="correo" id="correo" class="form-control" required autocomplete="off">
+               <input type="email" name="correo" id="correo" class="form-control" required autocomplete="off" value="{{ old('correo') }}">
             </div>
 
             <div class="mb-3">

@@ -9,6 +9,14 @@ use App\Http\Controllers\PasswordController;
 
 // Página principal
 Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route('inicio');
+    }
+    return view('auth.login');
+})->name('login');
+
+
+Route::get('/inicio', function () {
     return view('inicio');
 })->name('inicio');
 
@@ -53,7 +61,9 @@ Route::post('/password/email', [PasswordController::class, 'sendResetLink']);
 Route::get('/password/reset/{token}', [PasswordController::class, 'showResetForm']);
 Route::post('/password/reset', [PasswordController::class, 'resetPassword']);
 
-Route::post('/login', [App\Http\Controllers\LoginController::class, 'login'])->name('login.post');
+Route::post('/login', [App\Http\Controllers\LoginController::class, 'login'])
+->middleware('throttle:3,1')
+->name('login.post');
 
 Route::get('/logout', function (Request $request) {
     Auth::logout();

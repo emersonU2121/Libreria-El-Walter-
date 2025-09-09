@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Usuario;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\PasswordController;
 
 // Página principal
 Route::get('/', function () {
@@ -44,6 +45,13 @@ Route::get('/usuarios/mostrar', function () {
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
+
+// Resetear contraseña - formulario para solicitar el enlace de restablecimiento
+
+Route::get('/password/reset', [PasswordController::class, 'showRequestForm']);
+Route::post('/password/email', [PasswordController::class, 'sendResetLink']);
+Route::get('/password/reset/{token}', [PasswordController::class, 'showResetForm']);
+Route::post('/password/reset', [PasswordController::class, 'resetPassword']);
 
 Route::post('/login', [App\Http\Controllers\LoginController::class, 'login'])->name('login.post');
 

@@ -80,11 +80,17 @@
                             </span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="perfilDropdown">
+
                            @if(Auth::check())
-    <li><a class="dropdown-item" href="{{ route('logout') }}">Cerrar sesión</a></li>
-@else
-    <li><a class="dropdown-item" href="{{ route('login') }}">Iniciar sesión</a></li>
-@endif
+                               <li>
+                                   <form action="{{ route('logout') }}" method="POST" style="display:inline;">
+                                       @csrf
+                                       <button type="submit" class="dropdown-item">Cerrar sesión</button>
+                                   </form>
+                               </li>
+                           @else
+                               <li><a class="dropdown-item" href="{{ route('login') }}">Iniciar sesión</a></li>
+                           @endif
 
                         </ul>
                     </li>

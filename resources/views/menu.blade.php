@@ -22,6 +22,23 @@
             justify-content: center;
             align-items: center;
         }
+
+        /* --- FIX scroll en #contenido (debe ir al final del <style>) --- */
+:root { --nav-h: 64px; }                 /* ya lo tenías, se mantiene */
+html, body { height: 100%; overflow: hidden; }
+
+.navbar { position: sticky; top: 0; z-index: 1030; } /* menú visible siempre */
+
+/* Solo #contenido scrollea y sin perder altura por el mt-5 */
+#contenido {
+  margin-top: 0 !important;                              /* anula el mt-5 del HTML */
+  height: calc(100vh - var(--nav-h));                    /* alto válido */
+  overflow-y: auto;                                      /* scroll vertical */
+  -webkit-overflow-scrolling: touch;                     /* suave en móviles */
+  align-items: flex-start;                               /* comienza arriba */
+  padding: 16px 12px 32px;                               /* top y bottom para que se vean los botones */
+}
+
         .compact-form {
             background-color: white;
             border-radius: 8px;

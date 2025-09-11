@@ -56,7 +56,7 @@
 </head>
 <body>
     <div class="login-card">
-        <h2>Nuevo password</h2>
+        <h2>Nueva Contraseña</h2>
 
         <form method="POST" action="/password/reset">
             @csrf

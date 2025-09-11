@@ -62,8 +62,7 @@ Route::get('/password/reset/{token}', [PasswordController::class, 'showResetForm
 Route::post('/password/reset', [PasswordController::class, 'resetPassword']);
 
 Route::post('/login', [App\Http\Controllers\LoginController::class, 'login'])
-->middleware('throttle:3,1')
-->name('login.post');
+    ->name('login.post'); // ← sin ->middleware('throttle:3,1')
 
 Route::post('/logout', function (Request $request) {
     Auth::logout();

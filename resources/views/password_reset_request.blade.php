@@ -59,6 +59,11 @@
                 {{ session('status') }}
             </div>
         @endif
+        @if ($errors->has('correo'))
+    <div class="alert alert-danger">
+        {{ $errors->first('correo') }}
+    </div>
+@endif
 
         <form method="POST" action="/password/email">
             @csrf

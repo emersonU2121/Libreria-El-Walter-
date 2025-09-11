@@ -32,6 +32,7 @@
             <label for="nombre" class="form-label">Usuario</label>
             <input type="text" id="nombre" name="nombre" class="form-control"
                    value="{{ old('nombre') }}" required data-no-autofill readonly>
+
         </div>
 
         <div class="mb-3">
@@ -62,7 +63,6 @@
             {{-- name con ñ porque tu Controller lo valida así --}}
             <input type="password" id="contrassena" name="contraseña" class="form-control"
                    required autocomplete="new-password" data-no-autofill readonly>
-            <small class="text-muted">Mínimo 12 caracteres.</small>
         </div>
 
         <div class="mb-3">
@@ -72,6 +72,7 @@
                 <option value="Empleado" {{ old('rol')=='Empleado' ? 'selected':'' }}>Empleado</option>
                 <option value="Administrador" {{ old('rol')=='Administrador' ? 'selected':'' }}>Administrador</option>
             </select>
+
         </div>
 
         <div class="d-flex justify-content-between">
@@ -124,5 +125,90 @@
       }
     });
   })();
+
+  (() => {
+  const form = document.getElementById('formRegistro');
+  if (!form) return;
+
+  const $ = id => document.getElementById(id);
+  const nombre = $('nombre');
+  const correo = $('correo');
+  const pass   = $('contrassena');   // <-- tu mismo id
+  const rol    = $('rol');
+
+  // Crea un <div.invalid-feedback> si no existe, justo después del campo
+  function ensureErrorEl(el, preferId, defaultMsg='Campo obligatorio*') {
+    let err = preferId ? document.getElementById(preferId) : null;
+    if (!err) err = el.parentElement.querySelector('.invalid-feedback');
+    if (!err) {
+      err = document.createElement('div');
+      err.className = 'invalid-feedback';
+      err.textContent = defaultMsg;
+      el.insertAdjacentElement('afterend', err);
+    }
+    return err;
+  }
+
+  // Para correo ya tienes #correo_error; para los otros los creamos si faltan
+  const nombreErr = ensureErrorEl(nombre, 'nombre_error');
+  const correoErr = ensureErrorEl(correo, 'correo_error', 'Correo inválido.');
+  const passErr   = ensureErrorEl(pass,   'pass_error');
+  const rolErr    = ensureErrorEl(rol,    'rol_error');
+
+  const setInvalid = (el, errEl, msg) => { el.classList.add('is-invalid'); if (errEl && msg) errEl.textContent = msg; };
+  const clearInvalid = (el) => el.classList.remove('is-invalid');
+
+  function validateNombre() {
+    const ok = nombre.value.trim().length > 0;
+    ok ? clearInvalid(nombre) : setInvalid(nombre, nombreErr, 'Campo obligatorio*');
+    return ok;
+  }
+
+  function validateCorreo() {
+    const v = correo.value.trim();
+    if (!v) { setInvalid(correo, correoErr, 'Campo obligatorio*'); return false; }
+    // Usa tu patrón del atributo pattern (si existe)
+    let ok = true;
+    const pattern = correo.getAttribute('pattern');
+    if (pattern) {
+      const re = new RegExp(pattern, 'i');
+      ok = re.test(v);
+    } else {
+      ok = /\S+@\S+\.\S+/.test(v);
+    }
+    ok ? clearInvalid(correo)
+       : setInvalid(correo, correoErr, 'Solo se permiten: gmail.com, outlook.com, hotmail.com o ues.edu.sv');
+    return ok;
+  }
+
+  function validatePass() {
+    const v = pass.value || '';
+    if (!v.trim()) { setInvalid(pass, passErr, 'Campo obligatorio*'); return false; }
+    if (v.length < 12) { setInvalid(pass, passErr, 'Mínimo 12 caracteres.'); return false; }
+    clearInvalid(pass); return true;
+  }
+
+  function validateRol() {
+    const ok = !!rol.value;
+    ok ? clearInvalid(rol) : setInvalid(rol, rolErr, 'Campo obligatorio*');
+    return ok;
+  }
+
+  // Validación en vivo
+  nombre && nombre.addEventListener('input', validateNombre);
+  correo && correo.addEventListener('input', validateCorreo);
+  pass   && pass.addEventListener('input',   validatePass);
+  rol    && rol.addEventListener('change',  validateRol);
+
+  // Validar al enviar
+  form.addEventListener('submit', (e) => {
+    const ok = [validateNombre(), validateCorreo(), validatePass(), validateRol()].every(Boolean);
+    if (!ok) {
+      e.preventDefault();
+      const first = form.querySelector('.is-invalid');
+      if (first) first.scrollIntoView({behavior: 'smooth', block: 'center'});
+    }
+  });
+})();
 </script>
 @endsection

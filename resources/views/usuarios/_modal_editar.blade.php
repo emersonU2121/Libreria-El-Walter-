@@ -32,10 +32,7 @@
             </select>
           </div>
 
-          <div class="mb-2">
-            <label for="edit_contrasena" class="form-label">Contraseña (opcional)</label>
-            <input type="password" id="edit_contrasena" name="contraseña" class="form-control" placeholder="Deja vacío para no cambiar">
-          </div>
+         
         </div>
 
         <div class="modal-footer">

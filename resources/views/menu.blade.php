@@ -69,29 +69,34 @@
 
                     </li>
                 </ul>
-                <ul class="navbar-nav">
+               <ul class="navbar-nav">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="perfilDropdown"
-                           role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="me-2">👤</span> 
-                            <span>
-                                @php $rol = "Invitado"; @endphp
-                                {{ $rol }}
-                            </span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="perfilDropdown">
+                       <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="perfilDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="me-2">👤</span> 
+    <span>
+        @auth
+                  
 
+            {{ Auth::user()->rol ?? 'Invitado' }} <!-- Si hay un rol, lo muestra, si no, muestra "Invitado" -->
+        @else
+            Invitado
+        @endauth
+    </span>
+</a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="perfilDropdown">
                            @if(Auth::check())
                                <li>
                                    <form action="{{ route('logout') }}" method="POST" style="display:inline;">
                                        @csrf
+                                       <div class="mb-3">
+        <input type="text" id="usuario" class="form-control" value="{{ Auth::user()->nombre }}" disabled>
+    </div>
                                        <button type="submit" class="dropdown-item">Cerrar sesión</button>
                                    </form>
                                </li>
                            @else
                                <li><a class="dropdown-item" href="{{ route('login') }}">Iniciar sesión</a></li>
                            @endif
-
                         </ul>
                     </li>
                 </ul>
@@ -106,4 +111,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+<footer class="text-center">
+    <p>&copy; {{ date('Y') }} Universidad Nacional de El Salvador. Todos los derechos reservados.</p>
+</footer>
 </html>

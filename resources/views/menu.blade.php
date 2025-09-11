@@ -57,46 +57,56 @@
                     <li class="nav-item"><a class="nav-link" href="#">Categoría</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Compras</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Ventas</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="usuariosDropdown" 
-                           role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Usuarios
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="usuariosDropdown">
-    <li><a class="dropdown-item" href="{{ route('usuarios.registrar') }}">Registrar usuario</a></li>
-    <li><a class="dropdown-item" href="{{ route('usuarios.mostrar') }}">Mostrar usuarios</a></li>
-</ul>
-
-                    </li>
+                    
+                    <!-- Menú de Usuarios (solo visible para administradores) -->
+                    @auth
+                        @if(Auth::user()->rol === 'Administrador')
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="usuariosDropdown" 
+                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Usuarios
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="usuariosDropdown">
+                                    <li><a class="dropdown-item" href="{{ route('usuarios.registrar') }}">Registrar usuario</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('usuarios.mostrar') }}">Mostrar usuarios</a></li>
+                                </ul>
+                            </li>
+                        @endif
+                    @endauth
                 </ul>
-               <ul class="navbar-nav">
+                
+                <ul class="navbar-nav">
                     <li class="nav-item dropdown">
-                       <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="perfilDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <span class="me-2">👤</span> 
-    <span>
-        @auth
-                  
-
-            {{ Auth::user()->rol ?? 'Invitado' }} <!-- Si hay un rol, lo muestra, si no, muestra "Invitado" -->
-        @else
-            Invitado
-        @endauth
-    </span>
-</a>
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="perfilDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="me-2">👤</span> 
+                            <span>
+                                @auth
+                                    {{ Auth::user()->rol ?? 'Invitado' }}
+                                @else
+                                    Invitado
+                                @endauth
+                            </span>
+                        </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="perfilDropdown">
-                           @if(Auth::check())
-                               <li>
-                                   <form action="{{ route('logout') }}" method="POST" style="display:inline;">
-                                       @csrf
-                                       <div class="mb-3">
-        <input type="text" id="usuario" class="form-control" value="{{ Auth::user()->nombre }}" disabled>
-    </div>
-                                       <button type="submit" class="dropdown-item">Cerrar sesión</button>
-                                   </form>
-                               </li>
-                           @else
-                               <li><a class="dropdown-item" href="{{ route('login') }}">Iniciar sesión</a></li>
-                           @endif
+                            @if(Auth::check())
+                                <li>
+                                    <div class="dropdown-item-text">
+                                        <div class="mb-2">
+                                            <strong>{{ Auth::user()->nombre }}</strong>
+                                        </div>
+                                        <small class="text-muted">{{ Auth::user()->email }}</small>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form action="{{ route('logout') }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item">Cerrar sesión</button>
+                                    </form>
+                                </li>
+                            @else
+                                <li><a class="dropdown-item" href="{{ route('login') }}">Iniciar sesión</a></li>
+                            @endif
                         </ul>
                     </li>
                 </ul>
@@ -111,7 +121,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-<footer class="text-center">
+<footer class="text-center mt-5 py-3 bg-light">
     <p>&copy; {{ date('Y') }} Universidad Nacional de El Salvador. Todos los derechos reservados.</p>
 </footer>
 </html>

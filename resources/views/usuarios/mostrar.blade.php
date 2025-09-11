@@ -73,6 +73,27 @@
 @include('usuarios._modal_editar')
 @include('usuarios._modal_baja')
 
+@if ($errors->has('nombre') || $errors->has('correo'))
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var modal = new bootstrap.Modal(document.getElementById('modalEditar'));
+    modal.show();
+  });
+</script>
+@endif
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const modalEditar = document.getElementById('modalEditar');
+  if (modalEditar) {
+    modalEditar.addEventListener('hide.bs.modal', function () {
+      // Oculta los mensajes de error al cerrar el modal
+      document.querySelectorAll('#modalEditar .text-danger').forEach(el => el.style.display = 'none');
+    });
+  }
+});
+</script>
+
 {{-- JS: fija actions, textos y colores (doble seguro: click y show.bs.modal) --}}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -161,4 +182,5 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+
 @endsection

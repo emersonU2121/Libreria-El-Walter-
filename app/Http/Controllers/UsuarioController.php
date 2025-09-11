@@ -94,53 +94,58 @@ class UsuarioController extends Controller
      * Editar usuario (desde modal). Web (redirect) y API (JSON).
      */
     public function update(Request $request, $id)
-    {
-        $usuario = Usuario::find($id);
-        if (!$usuario) {
-            if (!$request->expectsJson()) {
-                return back()->with('error', 'Usuario no encontrado');
-            }
-            return response()->json(['message' => 'Usuario no encontrado', 'status' => 404], 404);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'nombre'     => ['required','string','max:255','unique:usuario,nombre,'.$id.',idusuario'],
-            'correo'     => ['required','string','email','max:255','unique:usuario,correo,'.$id.',idusuario'],
-            'rol'        => ['nullable','string','max:50'],
-            'contraseña' => ['nullable','string','min:12'],
-        ]);
-
-        if ($validator->fails()) {
-            if (!$request->expectsJson()) {
-                return back()->withErrors($validator)->withInput();
-            }
-            return response()->json([
-                'message' => 'Error de validacion',
-                'errors'  => $validator->errors(),
-                'status'  => 400,
-            ], 400);
-        }
-
-        $usuario->nombre = $request->input('nombre');
-        $usuario->correo = $request->input('correo');
-        if ($request->filled('rol')) {
-            $usuario->rol = $request->input('rol');
-        }
-        if ($request->filled('contraseña')) {
-            $usuario->setAttribute('contraseña', bcrypt($request->input('contraseña')));
-        }
-        $usuario->save();
-
+{
+    $usuario = Usuario::find($id);
+    if (!$usuario) {
         if (!$request->expectsJson()) {
-            return back()->with('ok', 'Usuario actualizado correctamente');
+            return back()->with('error', 'Usuario no encontrado');
         }
-
         return response()->json([
-            'message' => 'Usuario actualizado',
-            'usuario' => $usuario,
-            'status'  => 200,
-        ], 200);
+            'success' => false,
+            'message' => 'Usuario no encontrado'
+        ], 404);
     }
+
+    $validator = Validator::make($request->all(), [
+        'nombre'     => ['required','string','max:255','unique:usuario,nombre,'.$id.',idusuario'],
+        'correo'     => ['required','string','email','max:255','unique:usuario,correo,'.$id.',idusuario'],
+        'rol'        => ['nullable','string','max:50'],
+        'contraseña' => ['nullable','string','min:12'],
+    ],[
+        'nombre.unique' => 'El nombre de usuario ya ha sido registrado.'
+    ]);
+
+    if ($validator->fails()) {
+        if (!$request->expectsJson()) {
+            return back()->withErrors($validator)->withInput();
+        }
+        return response()->json([
+            'success' => false,
+            'message' => 'Error de validación',
+            'errors'  => $validator->errors()
+        ], 422);
+    }
+
+    $usuario->nombre = $request->input('nombre');
+    $usuario->correo = $request->input('correo');
+    if ($request->filled('rol')) {
+        $usuario->rol = $request->input('rol');
+    }
+    if ($request->filled('contraseña')) {
+        $usuario->setAttribute('contraseña', bcrypt($request->input('contraseña')));
+    }
+    $usuario->save();
+
+    if (!$request->expectsJson()) {
+        return back()->with('ok', 'Usuario actualizado correctamente');
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Usuario actualizado correctamente',
+        'usuario' => $usuario
+    ], 200);
+}
 
     /**
      * (Opcional) Actualización parcial (API).
@@ -153,10 +158,12 @@ class UsuarioController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'nombre'     => ['sometimes','required','string','max:255'],
+            'nombre'     => ['sometimes','required','string','max:255','unique:usuario,nombre,'.$id.',idusuario'],
             'correo'     => ['sometimes','required','string','email','max:255','unique:usuario,correo,'.$id.',idusuario'],
             'rol'        => ['sometimes','nullable','string','max:50'],
             'contraseña' => ['sometimes','nullable','string','min:12'],
+        ],[
+            'nombre.unique' => 'El usuario ya ha sido registrado.'
         ]);
 
         if ($validator->fails()) {

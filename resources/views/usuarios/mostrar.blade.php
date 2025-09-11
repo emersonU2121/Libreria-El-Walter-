@@ -11,8 +11,8 @@
       <table class="table table-bordered table-striped text-center align-middle">
         <thead class="table-dark">
           <tr>
-            <th>ID</th>
-            <th>Nombre</th>
+            <!--<th>N°</th>-->
+            <th>Usuario</th>
             <th>Correo</th>
             <th>Rol</th>
             <th>Estado</th>
@@ -23,7 +23,7 @@
           @foreach($usuarios as $u)
             @php $isActive = isset($u->activo) ? (bool)$u->activo : true; @endphp
             <tr>
-              <td>{{ $u->idusuario }}</td>
+              <!--<td>{{ $u->idusuario }}</td>-->
               <td>{{ $u->nombre }}</td>
               <td>{{ $u->correo }}</td>
               <td>{{ $u->rol ?? 'Sin rol' }}</td>

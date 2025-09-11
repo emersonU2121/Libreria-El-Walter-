@@ -36,10 +36,12 @@ class UsuarioController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nombre'     => 'required|string|max:255',
+            'nombre'     => 'required|string|max:255|unique:usuario,nombre',
             'correo'     => 'required|string|email|max:255|unique:usuario,correo',
             'contraseña' => 'required|string|min:12',
             'rol'        => 'required|string|max:50',
+        ],[
+            'nombre.unique' => 'El usuario ya ha sido registrado.'
         ]);
 
         if ($validator->fails()) {
@@ -102,7 +104,7 @@ class UsuarioController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'nombre'     => ['required','string','max:255'],
+            'nombre'     => ['required','string','max:255','unique:usuario,nombre,'.$id.',idusuario'],
             'correo'     => ['required','string','email','max:255','unique:usuario,correo,'.$id.',idusuario'],
             'rol'        => ['nullable','string','max:50'],
             'contraseña' => ['nullable','string','min:12'],

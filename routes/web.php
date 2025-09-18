@@ -54,6 +54,9 @@ Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
 
+//validar nombre 
+Route::post('/usuarios/validar-nombre', [UsuarioController::class, 'validarNombre'])->name('usuarios.validar-nombre');
+
 // Resetear contraseña - formulario para solicitar el enlace de restablecimiento
 
 Route::get('/password/reset', [PasswordController::class, 'showRequestForm']);

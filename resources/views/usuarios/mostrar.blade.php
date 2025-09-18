@@ -182,5 +182,39 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('formEditarUsuario');
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
 
+    // Limpia errores previos
+    form.querySelectorAll('.text-danger').forEach(el => el.remove());
+
+    const nombre = document.getElementById('edit_nombre').value;
+    const idusuario = document.getElementById('edit_idusuario').value;
+
+    fetch("{{ route('usuarios.validar-nombre') }}", {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+      },
+      body: JSON.stringify({ nombre, idusuario })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.duplicado) {
+        // Muestra el error debajo del input
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'text-danger small mt-1';
+        errorDiv.textContent = 'El usuario ya ha sido registrado.';
+        document.getElementById('edit_nombre').after(errorDiv);
+      } else {
+        form.submit(); // Envía el formulario si no hay duplicado
+      }
+    });
+  });
+});
+</script>
 @endsection

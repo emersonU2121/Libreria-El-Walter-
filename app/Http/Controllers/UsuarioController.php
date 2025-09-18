@@ -117,7 +117,7 @@ class UsuarioController extends Controller
 
     if ($validator->fails()) {
         if (!$request->expectsJson()) {
-            return back()->withErrors($validator)->withInput();
+            return back()->withErrors($validator)->withInput()->with('modal', 'editar');
         }
         return response()->json([
             'success' => false,
@@ -228,5 +228,19 @@ class UsuarioController extends Controller
         return request()->expectsJson()
             ? response()->json(['message' => 'Usuario reactivado', 'status' => 200], 200)
             : back()->with('ok', 'Usuario reactivado');
+    }
+
+    //validar nombre
+    public function validarNombre(Request $request){
+        $id = $request->input('idUsuario');
+        $nombre = $request->input('nombre');
+        $existe = \App\Models\Usuario::where('nombre', $nombre)
+        ->when($id, function($query) use ($id) {
+            $query->where('idusuario', '!=', $id);
+        })
+        ->exists();
+
+    return response()->json(['duplicado' => $existe]);
+
     }
 }

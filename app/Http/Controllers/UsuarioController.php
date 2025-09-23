@@ -8,17 +8,13 @@ use Illuminate\Support\Facades\Validator;
 
 class UsuarioController extends Controller
 {
-    /**
-     * Mostrar formulario de registro (vista Blade).
-     */
+    
     public function create()
     {
         return view('usuarios.registrar');
     }
 
-    /**
-     * (Opcional) Listado JSON de usuarios (modo API).
-     */
+   
     public function index()
     {
         $usuarios = Usuario::all();
@@ -30,9 +26,7 @@ class UsuarioController extends Controller
         return response()->json($usuarios, 200);
     }
 
-    /**
-     * Guardar un usuario (sirve para Web y API).
-     */
+  
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -77,9 +71,7 @@ class UsuarioController extends Controller
         ], 201);
     }
 
-    /**
-     * (Opcional) Mostrar 1 usuario en JSON (modo API).
-     */
+ 
     public function show($id)
     {
         $usuario = Usuario::find($id);
@@ -90,9 +82,7 @@ class UsuarioController extends Controller
         return response()->json(['message' => $usuario, 'status' => 200], 200);
     }
 
-    /**
-     * Editar usuario (desde modal). Web (redirect) y API (JSON).
-     */
+  
     public function update(Request $request, $id)
 {
     $usuario = Usuario::find($id);
@@ -147,9 +137,7 @@ class UsuarioController extends Controller
     ], 200);
 }
 
-    /**
-     * (Opcional) Actualización parcial (API).
-     */
+  //editar una parte
     public function updatePartial(Request $request, $id)
     {
         $usuario = Usuario::find($id);
@@ -188,10 +176,7 @@ class UsuarioController extends Controller
         ], 200);
     }
 
-    /**
-     * Marcar usuario como inactivo (Dar de baja).
-     * Soporta Web (redirect) y API (JSON).
-     */
+    //activo e inactivo usuario
     public function inactivo($id)
     {
         $usuario = Usuario::find($id);
@@ -209,10 +194,7 @@ class UsuarioController extends Controller
             : back()->with('ok', 'Usuario dado de baja');
     }
 
-    /**
-     * Marcar usuario como activo (Reactivar).
-     * Soporta Web (redirect) y API (JSON).
-     */
+  
     public function activo($id)
     {
         $usuario = Usuario::find($id);

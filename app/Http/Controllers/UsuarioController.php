@@ -83,6 +83,7 @@ class UsuarioController extends Controller
     }
 
   
+    //actualizar usuario
     public function update(Request $request, $id)
 {
     $usuario = Usuario::find($id);
@@ -97,8 +98,8 @@ class UsuarioController extends Controller
     }
 
     $validator = Validator::make($request->all(), [
-        'nombre'     => ['required','string','max:255','unique:usuario,nombre,'.$id.',idusuario'],
-        'correo'     => ['required','string','email','max:255','unique:usuario,correo,'.$id.',idusuario'],
+        'nombre'     => ['sometimes','string','max:255','unique:usuario,nombre,'.$id.',idusuario'],
+        'correo'     => ['sometimes','string','email','max:255','unique:usuario,correo,'.$id.',idusuario'],
         'rol'        => ['nullable','string','max:50'],
         'contraseña' => ['nullable','string','min:12'],
     ],[
@@ -116,11 +117,14 @@ class UsuarioController extends Controller
         ], 422);
     }
 
-    $usuario->nombre = $request->input('nombre');
-    $usuario->correo = $request->input('correo');
-    if ($request->filled('rol')) {
-        $usuario->rol = $request->input('rol');
+    if($request->has('nombre')){
+         $usuario->nombre = $request->input('nombre');
     }
+
+    if($request->has('correo')){
+         $usuario->correo = $request->input('correo');
+    }
+
     if ($request->filled('contraseña')) {
         $usuario->setAttribute('contraseña', bcrypt($request->input('contraseña')));
     }

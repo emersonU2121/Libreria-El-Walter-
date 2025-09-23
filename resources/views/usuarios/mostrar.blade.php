@@ -185,36 +185,79 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('formEditarUsuario');
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault(); // Detenemos el envío normal del formulario
 
-    // Limpia errores previos
-    form.querySelectorAll('.text-danger').forEach(el => el.remove());
+        // 1. LIMPIAR ERRORES PREVIOS
+        console.log('🔧 Limpiando errores previos...');
+        form.querySelectorAll('.text-danger').forEach(el => el.remove());
 
-    const nombre = document.getElementById('edit_nombre').value;
-    const idusuario = document.getElementById('edit_idusuario').value;
+        // 2. OBTENER LOS VALORES ACTUALES
+        const nombreActual = document.getElementById('edit_nombre').value;
+        const idusuario = document.getElementById('edit_idusuario').value;
+        
+        console.log(' Nombre actual:', nombreActual);
+        console.log(' ID usuario:', idusuario);
 
-    fetch("{{ route('usuarios.validar-nombre') }}", {
-      method: 'POST',
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-      },
-      body: JSON.stringify({ nombre, idusuario })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.duplicado) {
-        // Muestra el error debajo del input
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'text-danger small mt-1';
-        errorDiv.textContent = 'El usuario ya ha sido registrado.';
-        document.getElementById('edit_nombre').after(errorDiv);
-      } else {
-        form.submit(); // Envía el formulario si no hay duplicado
-      }
+        // 3. BUSCAR EL BOTÓN ORIGINAL PARA OBTENER EL NOMBRE ORIGINAL
+        const botonOriginal = document.querySelector('.btn-open-edit[data-idusuario="' + idusuario + '"]');
+        
+        if (!botonOriginal) {
+            console.error('❌ No se encontró el botón original');
+            form.submit(); // Envía por si acaso
+            return;
+        }
+
+        const nombreOriginal = botonOriginal.dataset.nombre;
+        console.log('Nombre original:', nombreOriginal);
+
+        // 4. COMPARAR: ¿EL NOMBRE CAMBIÓ?
+        if (nombreActual === nombreOriginal) {
+            console.log('Nombre no cambió - Enviando formulario directamente');
+            form.submit(); // Envía sin validar
+        } else {
+            console.log('Nombre cambió - Validando con AJAX...');
+            
+            // 5. VALIDAR CON AJAX SOLO SI CAMBIÓ
+            fetch("{{ route('usuarios.validar-nombre') }}", {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({ 
+                    nombre: nombreActual, 
+                    idUsuario: idusuario 
+                })
+            })
+            .then(res => {
+                console.log('Respuesta del servidor recibida');
+                return res.json();
+            })
+            .then(data => {
+                console.log('Datos recibidos:', data);
+                
+                if (data.duplicado) {
+                    console.log('❌ Nombre duplicado encontrado');
+                    // Mostrar error debajo del input
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'text-danger small mt-1';
+                    errorDiv.textContent = 'El usuario ya ha sido registrado.';
+                    document.getElementById('edit_nombre').after(errorDiv);
+                } else {
+                    console.log(' Nombre disponible - Enviando formulario');
+                    form.submit(); // Envía el formulario
+                }
+            })
+            .catch(error => {
+                console.error('Error en la validación:', error);
+                console.log('Enviando formulario a pesar del error');
+                form.submit(); // En caso de error, envía igualmente
+            });
+        }
     });
-  });
 });
+    
 </script>
 @endsection

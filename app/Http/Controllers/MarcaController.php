@@ -69,7 +69,6 @@ class MarcaController extends Controller
             'message' => 'Marca registrada exitosamente',
             'status'  => 201,
         ], 201);
-
     }
 
     /**
@@ -87,27 +86,69 @@ class MarcaController extends Controller
 
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(marca $marca)
-    {
-        //
-    }
+   
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, marca $marca)
+    public function update(Request $request, $id)
     {
-        //
+        $marca = Marca::find($id);
+
+        if(!$marca){
+           if($request->expectsJson()){
+                return back()->with('error', 'No se han encontrado marcas');
+           }
+            return response()->json([
+            'succes'=>false,
+            'message'=>'No se han encontrado marcas'
+        ], 404);
+
+        }
+        
+
+        $validator = Validator::make($request->all(), [
+            'nombre'=> ['required','string','max:255','unique::marca,nombre'.$id.'idMarca']
+        ],[
+            'nombre.unique'=> 'La marca ya ha sido registrada.'
+        ]);
+
+        if($validator->fails()){
+            if(!$request->expectsJson()){
+                return back()->withErrors($validator)->withInput()->with('modal','editar');
+            }
+         }
+
+         if($request->has('nombre')){
+                $marca->nombre = $request->input('nombre');
+            }
+        $marca->save();
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(marca $marca)
+    //validar marca
+    public function validarMarca(Request $request)
     {
-        //
+        $nombre = $request->input('nombre');
+        $idMarca = $request->input('idMarca');
+        $existe = \App\Models\Marca::where('nombre', $nombre)
+        ->when($idMarca, function($query) use ($idMarca) {
+            $query->where('idMarca', '!=', $idMarca);
+        })
+        ->exists();
+
+        return response()->json(['duplicado'=>$existe]);
     }
+
+    //marca activa o inactiva 
+    public function inactivo($id){
+        $marca = Marca::find($id);
+        
+        if(!$marca)
+        {
+            return request()->expectsJson();
+            
+        }
+
+    }
+   
 }

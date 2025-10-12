@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Usuario;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\ProductoController;
+
 
 // Página principal
 Route::get('/', function () {
@@ -73,3 +75,12 @@ Route::post('/logout', function (Request $request) {
     $request->session()->regenerateToken();
     return redirect()->route('login');
 })->name('logout');
+
+
+Route::get('/productos/registrar', [ProductoController::class, 'create'])->name('productos.registrar');
+Route::get('/productos/mostrar',   [ProductoController::class, 'mostrar'])->name('productos.mostrar');
+
+Route::post('/productos',                [ProductoController::class, 'store'])->name('productos.store');
+Route::put('/productos/{id}',            [ProductoController::class, 'update'])->name('productos.update');
+Route::put('/productos/{id}/inactivo',   [ProductoController::class, 'inactivo'])->name('productos.inactivo');
+Route::put('/productos/{id}/activo',     [ProductoController::class, 'activo'])->name('productos.activo');

@@ -2,38 +2,23 @@
 
 @section('contenido')
 <div class="card shadow p-4 w-100">
-  <h2 class="mb-4 text-center">Lista de Usuarios</h2>
+  <h2 class="mb-4 text-center">Lista de Marcas</h2>
 
-  @if($usuarios->isEmpty())
-    <div class="alert alert-warning text-center">No hay usuarios registrados.</div>
+  @if($marcas->isEmpty())
+    <div class="alert alert-warning text-center">No hay marcas registradas.</div>
   @else
     <div class="table-responsive">
       <table class="table table-bordered table-striped text-center align-middle">
         <thead class="table-dark">
           <tr>
-            <!--<th>N°</th>-->
-            <th>Usuario</th>
-            <th>Correo</th>
-            <th>Rol</th>
-            <th>Estado</th>
+            <th>Nombre</th>
             <th style="width:240px;">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          @foreach($usuarios as $u)
-            @php $isActive = isset($u->activo) ? (bool)$u->activo : true; @endphp
+          @foreach($marcas as $m)
             <tr>
-              <!--<td>{{ $u->idusuario }}</td>-->
-              <td>{{ $u->nombre }}</td>
-              <td>{{ $u->correo }}</td>
-              <td>{{ $u->rol ?? 'Sin rol' }}</td>
-              <td>
-                @if($isActive)
-                  <span class="badge bg-success">Activo</span>
-                @else
-                  <span class="badge bg-secondary">Inactivo</span>
-                @endif
-              </td>
+              <td>{{ $m->nombre }}</td>
               <td class="d-flex gap-2 justify-content-center">
                 {{-- Editar --}}
                 <button
@@ -41,25 +26,21 @@
                   class="btn btn-sm btn-primary btn-open-edit"
                   data-bs-toggle="modal"
                   data-bs-target="#modalEditar"
-                  data-idusuario="{{ $u->idusuario }}"
-                  data-nombre="{{ $u->nombre }}"
-                  data-correo="{{ $u->correo }}"
-                  data-rol="{{ $u->rol ?? '' }}"
-                  data-update-url="{{ route('usuarios.update', $u->idusuario) }}"
+                  data-idmarca="{{ $m->idMarca }}"
+                  data-nombre="{{ $m->nombre }}"
+                  data-update-url="{{ route('marcas.update', $m->idMarca) }}"
                 >Editar</button>
 
-                {{-- Dar de baja / Reactivar --}}
+                {{-- Eliminar --}}
                 <button
                   type="button"
-                  class="btn btn-sm {{ $isActive ? 'btn-warning' : 'btn-success' }} btn-open-baja"
+                  class="btn btn-sm btn-danger btn-open-eliminar"
                   data-bs-toggle="modal"
-                  data-bs-target="#modalBaja"
-                  data-idusuario="{{ $u->idusuario }}"
-                  data-nombre="{{ $u->nombre }}"
-                  data-activo="{{ $isActive ? 1 : 0 }}"
-                  data-inactivar-url="{{ route('usuarios.inactivo', $u->idusuario) }}"
-                  data-activar-url="{{ route('usuarios.activo', $u->idusuario) }}"
-                >{{ $isActive ? 'Dar de baja' : 'Reactivar' }}</button>
+                  data-bs-target="#modalEliminar"
+                  data-idmarca="{{ $m->idMarca }}"
+                  data-nombre="{{ $m->nombre }}"
+                  data-delete-url="{{ route('marcas.destroy', $m->idMarca) }}"
+                >Eliminar</button>
               </td>
             </tr>
           @endforeach
@@ -69,11 +50,16 @@
   @endif
 </div>
 
-{{-- Modales --}}
-@include('usuarios._modal_editar')
-@include('usuarios._modal_baja')
+{{-- Botón para agregar nueva marca --}}
+<div class="text-end mt-3">
+  <a href="{{ route('marcas.create') }}" class="btn btn-success">Agregar Nueva Marca</a>
+</div>
 
-@if ($errors->has('nombre') || $errors->has('correo'))
+{{-- Modales --}}
+@include('marcas._modal_editar')
+@include('marcas._modal_eliminar')
+
+@if ($errors->has('nombre'))
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     var modal = new bootstrap.Modal(document.getElementById('modalEditar'));
@@ -94,82 +80,58 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-{{-- JS: fija actions, textos y colores (doble seguro: click y show.bs.modal) --}}
+{{-- JS: fija actions, textos y colores --}}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   // ==== EDITAR =====
   document.querySelectorAll('.btn-open-edit').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.getElementById('edit_idusuario').value = btn.dataset.idusuario;
-      document.getElementById('edit_nombre').value    = btn.dataset.nombre || '';
-      document.getElementById('edit_correo').value    = btn.dataset.correo || '';
-      document.getElementById('edit_rol').value       = btn.dataset.rol || '';
-      const f = document.getElementById('formEditarUsuario');
+      document.getElementById('edit_idmarca').value = btn.dataset.idmarca;
+      document.getElementById('edit_nombre').value = btn.dataset.nombre || '';
+      const f = document.getElementById('formEditarMarca');
       if (f) f.action = btn.dataset.updateUrl || '#';
     });
   });
 
-  // ==== BAJA / REACTIVAR (click directo) ====
-  document.querySelectorAll('.btn-open-baja').forEach(btn => {
+  // ==== ELIMINAR =====
+  document.querySelectorAll('.btn-open-eliminar').forEach(btn => {
     btn.addEventListener('click', () => {
-      const activo = btn.dataset.activo === '1';
-      const id     = btn.dataset.idusuario;
+      const id = btn.dataset.idmarca;
       const nombre = btn.dataset.nombre || '';
-      const f      = document.getElementById('formBajaUsuario');
-      const msg    = document.getElementById('baja_message');
-      const hid    = document.getElementById('baja_idusuario');
-      const sBtn   = document.getElementById('baja_submit_btn');
+      const f = document.getElementById('formEliminarMarca');
+      const msg = document.getElementById('eliminar_message');
+      const hid = document.getElementById('eliminar_idmarca');
 
       if (hid) hid.value = id;
       if (msg) {
-        msg.innerHTML = activo
-          ? `¿Estás seguro de dar de baja al usuario <strong>${nombre}</strong>?`
-          : `¿Deseas reactivar al usuario <strong>${nombre}</strong>?`;
+        msg.innerHTML = `¿Estás seguro de eliminar la marca <strong>${nombre}</strong>? Esta acción no se puede deshacer.`;
       }
-      if (f) f.action = activo ? (btn.dataset.inactivarUrl || '#') : (btn.dataset.activarUrl || '#');
-
-      // Colores / texto del botón confirmar
-      if (sBtn) {
-        sBtn.textContent = activo ? 'Sí, dar de baja' : 'Reactivar';
-        sBtn.classList.remove('btn-success','btn-warning','btn-danger');
-        sBtn.classList.add(activo ? 'btn-warning' : 'btn-success');
-      }
+      if (f) f.action = btn.dataset.deleteUrl || '#';
     });
   });
 
-  // ==== BAJA / REACTIVAR (fallback: show.bs.modal) ====
-  const modalBajaEl = document.getElementById('modalBaja');
-  if (modalBajaEl) {
-    modalBajaEl.addEventListener('show.bs.modal', (ev) => {
+  // ==== ELIMINAR (fallback: show.bs.modal) ====
+  const modalEliminarEl = document.getElementById('modalEliminar');
+  if (modalEliminarEl) {
+    modalEliminarEl.addEventListener('show.bs.modal', (ev) => {
       const btn = ev.relatedTarget;
       if (!btn) return;
-      const activo = btn.getAttribute('data-activo') === '1';
-      const id     = btn.getAttribute('data-idusuario');
+      const id = btn.getAttribute('data-idmarca');
       const nombre = btn.getAttribute('data-nombre') || '';
-      const f      = document.getElementById('formBajaUsuario');
-      const msg    = document.getElementById('baja_message');
-      const hid    = document.getElementById('baja_idusuario');
-      const sBtn   = document.getElementById('baja_submit_btn');
+      const f = document.getElementById('formEliminarMarca');
+      const msg = document.getElementById('eliminar_message');
+      const hid = document.getElementById('eliminar_idmarca');
 
       if (hid) hid.value = id;
       if (msg) {
-        msg.innerHTML = activo
-          ? `¿Estás seguro de dar de baja al usuario <strong>${nombre}</strong>?`
-          : `¿Deseas reactivar al usuario <strong>${nombre}</strong>?`;
+        msg.innerHTML = `¿Estás seguro de eliminar la marca <strong>${nombre}</strong>? Esta acción no se puede deshacer.`;
       }
-      if (f) f.action = activo ? (btn.getAttribute('data-inactivar-url') || '#')
-                               : (btn.getAttribute('data-activar-url') || '#');
-
-      if (sBtn) {
-        sBtn.textContent = activo ? 'Sí, dar de baja' : 'Reactivar';
-        sBtn.classList.remove('btn-success','btn-warning','btn-danger');
-        sBtn.classList.add(activo ? 'btn-warning' : 'btn-success');
-      }
+      if (f) f.action = btn.getAttribute('data-delete-url') || '#';
     });
   }
 
-  // Salvaguarda: evita POST a /usuarios/mostrar si faltara action
-  ['formEditarUsuario','formBajaUsuario'].forEach(id => {
+  // Salvaguarda: evita POST incorrecto si faltara action
+  ['formEditarMarca','formEliminarMarca'].forEach(id => {
     const f = document.getElementById(id);
     if (f) {
       f.addEventListener('submit', e => {
@@ -182,82 +144,84 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+
+{{-- Validación AJAX para nombre duplicado al editar --}}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('formEditarUsuario');
+  const form = document.getElementById('formEditarMarca');
     
+  if (form) {
     form.addEventListener('submit', function(e) {
-        e.preventDefault(); // Detenemos el envío normal del formulario
+      e.preventDefault();
 
-        // 1. LIMPIAR ERRORES PREVIOS
-        console.log('🔧 Limpiando errores previos...');
-        form.querySelectorAll('.text-danger').forEach(el => el.remove());
+      // 1. LIMPIAR ERRORES PREVIOS
+      form.querySelectorAll('.text-danger').forEach(el => el.remove());
 
-        // 2. OBTENER LOS VALORES ACTUALES
-        const nombreActual = document.getElementById('edit_nombre').value;
-        const idusuario = document.getElementById('edit_idusuario').value;
+      // 2. OBTENER LOS VALORES ACTUALES
+      const nombreActual = document.getElementById('edit_nombre').value;
+      const idmarca = document.getElementById('edit_idmarca').value;
+      
+      console.log('Nombre actual:', nombreActual);
+      console.log('ID marca:', idmarca);
+
+      // 3. BUSCAR EL BOTÓN ORIGINAL PARA OBTENER EL NOMBRE ORIGINAL
+      const botonOriginal = document.querySelector('.btn-open-edit[data-idmarca="' + idmarca + '"]');
+      
+      if (!botonOriginal) {
+        console.error('No se encontró el botón original');
+        form.submit();
+        return;
+      }
+
+      const nombreOriginal = botonOriginal.dataset.nombre;
+      console.log('Nombre original:', nombreOriginal);
+
+      // 4. COMPARAR: ¿EL NOMBRE CAMBIÓ?
+      if (nombreActual === nombreOriginal) {
+        console.log('Nombre no cambió - Enviando formulario directamente');
+        form.submit();
+      } else {
+        console.log('Nombre cambió - Validando con AJAX...');
         
-        console.log(' Nombre actual:', nombreActual);
-        console.log(' ID usuario:', idusuario);
-
-        // 3. BUSCAR EL BOTÓN ORIGINAL PARA OBTENER EL NOMBRE ORIGINAL
-        const botonOriginal = document.querySelector('.btn-open-edit[data-idusuario="' + idusuario + '"]');
-        
-        if (!botonOriginal) {
-            console.error('❌ No se encontró el botón original');
-            form.submit(); // Envía por si acaso
-            return;
-        }
-
-        const nombreOriginal = botonOriginal.dataset.nombre;
-        console.log('Nombre original:', nombreOriginal);
-
-        // 4. COMPARAR: ¿EL NOMBRE CAMBIÓ?
-        if (nombreActual === nombreOriginal) {
-            console.log('Nombre no cambió - Enviando formulario directamente');
-            form.submit(); // Envía sin validar
-        } else {
-            console.log('Nombre cambió - Validando con AJAX...');
-            
-            // 5. VALIDAR CON AJAX SOLO SI CAMBIÓ
-            fetch("{{ route('usuarios.validar-nombre') }}", {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                },
-                body: JSON.stringify({ 
-                    nombre: nombreActual, 
-                    idUsuario: idusuario 
-                })
-            })
-            .then(res => {
-                console.log('Respuesta del servidor recibida');
-                return res.json();
-            })
-            .then(data => {
-                console.log('Datos recibidos:', data);
-                
-                if (data.duplicado) {
-                    console.log('❌ Nombre duplicado encontrado');
-                    // Mostrar error debajo del input
-                    const errorDiv = document.createElement('div');
-                    errorDiv.className = 'text-danger small mt-1';
-                    errorDiv.textContent = 'El usuario ya ha sido registrado.';
-                    document.getElementById('edit_nombre').after(errorDiv);
-                } else {
-                    console.log(' Nombre disponible - Enviando formulario');
-                    form.submit(); // Envía el formulario
-                }
-            })
-            .catch(error => {
-                console.error('Error en la validación:', error);
-                console.log('Enviando formulario a pesar del error');
-                form.submit(); // En caso de error, envía igualmente
-            });
-        }
+        // 5. VALIDAR CON AJAX SOLO SI CAMBIÓ
+        fetch("{{ route('marcas.validar') }}", {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+          },
+          body: JSON.stringify({ 
+            nombre: nombreActual, 
+            idMarca: idmarca 
+          })
+        })
+        .then(res => {
+          console.log('Respuesta del servidor recibida');
+          return res.json();
+        })
+        .then(data => {
+          console.log('Datos recibidos:', data);
+          
+          if (data.duplicado) {
+            console.log('Nombre duplicado encontrado');
+            // Mostrar error debajo del input
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'text-danger small mt-1';
+            errorDiv.textContent = 'La marca ya ha sido registrada.';
+            document.getElementById('edit_nombre').after(errorDiv);
+          } else {
+            console.log('Nombre disponible - Enviando formulario');
+            form.submit();
+          }
+        })
+        .catch(error => {
+          console.error('Error en la validación:', error);
+          console.log('Enviando formulario a pesar del error');
+          form.submit();
+        });
+      }
     });
+  }
 });
-    
 </script>
 @endsection

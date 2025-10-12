@@ -14,7 +14,7 @@ class MarcaController extends Controller
      */
     public function index()
     {
-        $marcas = Marca::all();
+        $marcas = marca::all();
 
         if($marcas->empty())
         {
@@ -138,17 +138,31 @@ class MarcaController extends Controller
 
         return response()->json(['duplicado'=>$existe]);
     }
-
-    //marca activa o inactiva 
-    public function inactivo($id){
+     public function destroy(Request $request, $id)
+    {
         $marca = Marca::find($id);
-        
-        if(!$marca)
-        {
-            return request()->expectsJson();
-            
+
+        if (!$marca) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Marca no encontrada'], 404);
+            }
+            return back()->with('error', 'Marca no encontrada');
         }
 
+        try {
+            $marca->delete();
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Marca eliminada correctamente', 'status' => 200], 200);
+            }
+
+            return redirect()->route('marcas.index')->with('ok', 'Marca eliminada correctamente');
+        } catch (\Throwable $e) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Error al eliminar la marca', 'error' => $e->getMessage()], 500);
+            }
+            return back()->with('error', 'Error al eliminar la marca');
+        }
     }
    
 }

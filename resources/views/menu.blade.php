@@ -78,6 +78,20 @@
                     </div>
                     @endif
                 @endauth
+
+                {{-- === PRODUCTOS (dropdown) === --}}
+<div class="dropdown d-inline-block">
+  <a class="value text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <svg class="normal" viewBox="0 0 24 24" style="width:20px;height:20px;vertical-align:middle;">
+      <path d="M16 6V4H8v2H2v2h2l2.6 9.59A2 2 0 008.53 20H15.5a2 2 0 001.93-1.49L20 8h2V6h-6zM9 6h6v2H9V6zm6.5 12h-7l-2-8h11l-2 8z" fill="currentColor"/>
+    </svg>
+    Productos
+  </a>
+  <ul class="dropdown-menu">
+    <li><a class="dropdown-item" href="{{ route('productos.registrar') }}">Registrar producto</a></li>
+    <li><a class="dropdown-item" href="{{ route('productos.mostrar') }}">Mostrar productos</a></li>
+  </ul>
+</div>
             </div>
             
             <!-- MENÚ DE PERFIL (MANTIENE TODAS TUS VALIDACIONES) -->

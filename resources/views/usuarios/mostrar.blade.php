@@ -2,30 +2,38 @@
 
 @section('contenido')
 <div class="card shadow p-4 w-100">
-  <h2 class="mb-4 text-center">Lista de Marcas</h2>
+  <h2 class="mb-4 text-center">Lista de Usuarios</h2>
 
-  @if(session('ok'))
-    <div class="alert alert-success">{{ session('ok') }}</div>
-  @endif
-  @if(session('error'))
-    <div class="alert alert-danger">{{ session('error') }}</div>
-  @endif
-
-  @if($marcas->isEmpty())
-    <div class="alert alert-warning text-center">No hay marcas registradas.</div>
+  @if($usuarios->isEmpty())
+    <div class="alert alert-warning text-center">No hay usuarios registrados.</div>
   @else
     <div class="table-responsive">
       <table class="table table-bordered table-striped text-center align-middle">
         <thead class="table-dark">
           <tr>
+            <th>ID</th>
             <th>Nombre</th>
+            <th>Correo</th>
+            <th>Rol</th>
+            <th>Estado</th>
             <th style="width:240px;">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          @foreach($marcas as $marca)
+          @foreach($usuarios as $u)
+            @php $isActive = isset($u->activo) ? (bool)$u->activo : true; @endphp
             <tr>
-              <td>{{ $marca->nombre }}</td>
+              <td>{{ $u->idusuario }}</td>
+              <td>{{ $u->nombre }}</td>
+              <td>{{ $u->correo }}</td>
+              <td>{{ $u->rol ?? 'Sin rol' }}</td>
+              <td>
+                @if($isActive)
+                  <span class="badge bg-success">Activo</span>
+                @else
+                  <span class="badge bg-secondary">Inactivo</span>
+                @endif
+              </td>
               <td class="d-flex gap-2 justify-content-center">
                 {{-- Editar --}}
                 <button
@@ -33,21 +41,25 @@
                   class="btn btn-sm btn-primary btn-open-edit"
                   data-bs-toggle="modal"
                   data-bs-target="#modalEditar"
-                  data-idmarca="{{ $marca->idMarca }}"
-                  data-nombre="{{ $marca->nombre }}"
-                  data-update-url="{{ route('marcas.update', $marca->idMarca) }}"
+                  data-idusuario="{{ $u->idusuario }}"
+                  data-nombre="{{ $u->nombre }}"
+                  data-correo="{{ $u->correo }}"
+                  data-rol="{{ $u->rol ?? '' }}"
+                  data-update-url="{{ route('usuarios.update', $u->idusuario) }}"
                 >Editar</button>
 
-                {{-- Eliminar --}}
+                {{-- Dar de baja / Reactivar --}}
                 <button
                   type="button"
-                  class="btn btn-sm btn-danger btn-open-eliminar"
+                  class="btn btn-sm {{ $isActive ? 'btn-warning' : 'btn-success' }} btn-open-baja"
                   data-bs-toggle="modal"
-                  data-bs-target="#modalEliminar"
-                  data-idmarca="{{ $marca->idMarca }}"
-                  data-nombre="{{ $marca->nombre }}"
-                  data-delete-url="{{ route('marcas.destroy', $marca->idMarca) }}"
-                >Eliminar</button>
+                  data-bs-target="#modalBaja"
+                  data-idusuario="{{ $u->idusuario }}"
+                  data-nombre="{{ $u->nombre }}"
+                  data-activo="{{ $isActive ? 1 : 0 }}"
+                  data-inactivar-url="{{ route('usuarios.inactivo', $u->idusuario) }}"
+                  data-activar-url="{{ route('usuarios.activo', $u->idusuario) }}"
+                >{{ $isActive ? 'Dar de baja' : 'Reactivar' }}</button>
               </td>
             </tr>
           @endforeach
@@ -57,62 +69,86 @@
   @endif
 </div>
 
-{{-- Botón para agregar nueva marca --}}
-<div class="text-end mt-3">
-  <a href="{{ route('marcas.create') }}" class="btn btn-success">Agregar Nueva Marca</a>
-</div>
-
 {{-- Modales --}}
-@include('marcas._modal_editar')
-@include('marcas._modal_eliminar')
+@include('usuarios._modal_editar')
+@include('usuarios._modal_baja')
 
-@if ($errors->has('nombre'))
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var modal = new bootstrap.Modal(document.getElementById('modalEditar'));
-    modal.show();
-  });
-</script>
-@endif
-
+{{-- JS: fija actions, textos y colores (doble seguro: click y show.bs.modal) --}}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const modalEditar = document.getElementById('modalEditar');
-  if (modalEditar) {
-    modalEditar.addEventListener('hide.bs.modal', function () {
-      document.querySelectorAll('#modalEditar .text-danger').forEach(el => el.style.display = 'none');
-    });
-  }
-
   // ==== EDITAR =====
   document.querySelectorAll('.btn-open-edit').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.getElementById('edit_idmarca').value = btn.dataset.idmarca;
-      document.getElementById('edit_nombre').value = btn.dataset.nombre || '';
-      const f = document.getElementById('formEditarMarca');
+      document.getElementById('edit_idusuario').value = btn.dataset.idusuario;
+      document.getElementById('edit_nombre').value    = btn.dataset.nombre || '';
+      document.getElementById('edit_correo').value    = btn.dataset.correo || '';
+      document.getElementById('edit_rol').value       = btn.dataset.rol || '';
+      const f = document.getElementById('formEditarUsuario');
       if (f) f.action = btn.dataset.updateUrl || '#';
     });
   });
 
-  // ==== ELIMINAR =====
-  document.querySelectorAll('.btn-open-eliminar').forEach(btn => {
+  // ==== BAJA / REACTIVAR (click directo) ====
+  document.querySelectorAll('.btn-open-baja').forEach(btn => {
     btn.addEventListener('click', () => {
-      const id = btn.dataset.idmarca;
+      const activo = btn.dataset.activo === '1';
+      const id     = btn.dataset.idusuario;
       const nombre = btn.dataset.nombre || '';
-      const f = document.getElementById('formEliminarMarca');
-      const msg = document.getElementById('eliminar_message');
-      const hid = document.getElementById('eliminar_idmarca');
+      const f      = document.getElementById('formBajaUsuario');
+      const msg    = document.getElementById('baja_message');
+      const hid    = document.getElementById('baja_idusuario');
+      const sBtn   = document.getElementById('baja_submit_btn');
 
       if (hid) hid.value = id;
       if (msg) {
-        msg.innerHTML = `¿Estás seguro de eliminar la marca <strong>${nombre}</strong>? Esta acción no se puede deshacer.`;
+        msg.innerHTML = activo
+          ? `¿Estás seguro de dar de baja al usuario <strong>${nombre}</strong>?`
+          : `¿Deseas reactivar al usuario <strong>${nombre}</strong>?`;
       }
-      if (f) f.action = btn.dataset.deleteUrl || '#';
+      if (f) f.action = activo ? (btn.dataset.inactivarUrl || '#') : (btn.dataset.activarUrl || '#');
+
+      // Colores / texto del botón confirmar
+      if (sBtn) {
+        sBtn.textContent = activo ? 'Sí, dar de baja' : 'Reactivar';
+        sBtn.classList.remove('btn-success','btn-warning','btn-danger');
+        sBtn.classList.add(activo ? 'btn-warning' : 'btn-success');
+      }
     });
   });
 
-  // Salvaguarda
-  ['formEditarMarca','formEliminarMarca'].forEach(id => {
+  // ==== BAJA / REACTIVAR (fallback: show.bs.modal) ====
+  const modalBajaEl = document.getElementById('modalBaja');
+  if (modalBajaEl) {
+    modalBajaEl.addEventListener('show.bs.modal', (ev) => {
+      const btn = ev.relatedTarget;
+      if (!btn) return;
+      const activo = btn.getAttribute('data-activo') === '1';
+      const id     = btn.getAttribute('data-idusuario');
+      const nombre = btn.getAttribute('data-nombre') || '';
+      const f      = document.getElementById('formBajaUsuario');
+      const msg    = document.getElementById('baja_message');
+      const hid    = document.getElementById('baja_idusuario');
+      const sBtn   = document.getElementById('baja_submit_btn');
+
+      if (hid) hid.value = id;
+      if (msg) {
+        msg.innerHTML = activo
+          ? `¿Estás seguro de dar de baja al usuario <strong>${nombre}</strong>?`
+          : `¿Deseas reactivar al usuario <strong>${nombre}</strong>?`;
+      }
+      if (f) f.action = activo ? (btn.getAttribute('data-inactivar-url') || '#')
+                               : (btn.getAttribute('data-activar-url') || '#');
+
+      if (sBtn) {
+        sBtn.textContent = activo ? 'Sí, dar de baja' : 'Reactivar';
+        sBtn.classList.remove('btn-success','btn-warning','btn-danger');
+        sBtn.classList.add(activo ? 'btn-warning' : 'btn-success');
+      }
+    });
+  }
+
+  // Salvaguarda: evita POST a /usuarios/mostrar si faltara action
+  ['formEditarUsuario','formBajaUsuario'].forEach(id => {
     const f = document.getElementById(id);
     if (f) {
       f.addEventListener('submit', e => {
@@ -123,61 +159,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
-});
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('formEditarMarca');
-    
-  if (form) {
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      form.querySelectorAll('.text-danger').forEach(el => el.remove());
-
-      const nombreActual = document.getElementById('edit_nombre').value;
-      const idmarca = document.getElementById('edit_idmarca').value;
-      
-      const botonOriginal = document.querySelector('.btn-open-edit[data-idmarca="' + idmarca + '"]');
-      
-      if (!botonOriginal) {
-        form.submit();
-        return;
-      }
-
-      const nombreOriginal = botonOriginal.dataset.nombre;
-
-      if (nombreActual === nombreOriginal) {
-        form.submit();
-      } else {
-        fetch("{{ route('marcas.validar') }}", {
-          method: 'POST',
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": "{{ csrf_token() }}"
-          },
-          body: JSON.stringify({ 
-            nombre: nombreActual, 
-            idMarca: idmarca 
-          })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.duplicado) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'text-danger small mt-1';
-            errorDiv.textContent = 'La marca ya ha sido registrada.';
-            document.getElementById('edit_nombre').after(errorDiv);
-          } else {
-            form.submit();
-          }
-        })
-        .catch(error => {
-          form.submit();
-        });
-      }
-    });
-  }
 });
 </script>
 @endsection

@@ -8,7 +8,8 @@ use App\Models\Marca;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\ProductoController;
-use  App\Http\Controllers\MarcaController;
+use App\Http\Controllers\MarcaController;
+use App\Http\Controllers\CategoriaController;
 
 
 // ====== Principal ======
@@ -106,3 +107,21 @@ Route::post('/marcas', [MarcaController::class, 'store'])->name('marcas.store');
 Route::put('/marcas/{id}', [MarcaController::class, 'update'])->name('marcas.update');
 Route::delete('/marcas/{id}', [MarcaController::class, 'destroy'])->name('marcas.destroy');
 Route::post('/marcas/validar', [MarcaController::class, 'validarMarca'])->name('marcas.validar');
+
+// ====== CATEGORIAS ======
+// routes/web.php
+Route::prefix('categorias')->name('categorias.')->group(function () {
+    Route::get('/', [CategoriaController::class,'index'])->name('mostrarC');
+    Route::get('/registrar', [CategoriaController::class,'create'])->name('registrarC');
+    Route::post('/', [CategoriaController::class,'store'])->name('store');
+    Route::put('/{categoria}', [CategoriaController::class,'update'])->name('update');
+
+    // bajas / reactivación separadas (idéntico a tu patrón en usuarios)
+    Route::put('/{categoria}/inactivo', [CategoriaController::class,'inactivo'])->name('inactivo');
+    Route::put('/{categoria}/activo',   [CategoriaController::class,'activo'])->name('activo');
+
+    // validación AJAX de nombre
+    Route::post('/validar-nombre', [CategoriaController::class,'validarNombre'])->name('validar-nombre');
+
+    Route::delete('/{categoria}', [CategoriaController::class,'destroy'])->name('destroy');
+});

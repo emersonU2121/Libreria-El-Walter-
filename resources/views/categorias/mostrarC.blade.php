@@ -1,7 +1,47 @@
 @extends('menu')
 
 @section('contenido')
-<div class="card shadow p-4 w-100">
+<div style="margin-right: 20px;" class="compact-form">
+    <h1>Registro de Categorías</h1>
+
+    @if(session('ok'))
+        <div class="alert alert-success">{{ session('ok') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ route('categorias.store') }}" method="post" autocomplete="off" novalidate id="formRegistro">
+        @csrf
+
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre de la Categoría</label>
+            <input type="text" id="nombre" name="nombre" class="form-control"
+                   value="{{ old('nombre') }}" required>
+            @error('nombre')
+                <div class="text-danger small">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-dark">Registrar Categoría</button>
+            <a href="{{ route('categorias.mostrarC') }}" class="btn btn-danger">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+
+<div style="margin: auto" class="card shadow p-4 w-100">
   <h2 class="mb-4 text-center">Lista de Categorías</h2>
 
   @if($categorias->isEmpty())
@@ -11,34 +51,19 @@
       <table class="table table-bordered table-striped text-center align-middle">
         <thead class="table-dark">
           <tr>
-            <th>Categoría</th>
-            {{-- Si usas columna "estado" (bool) la mostramos --}}
-            <th>Estado</th>
+            <th>Nombre</th>
             <th style="width:240px;">Acciones</th>
           </tr>
         </thead>
         <tbody>
           @foreach($categorias as $c)
-            @php
-              // si no tienes "estado", la tratamos como activa por defecto
-              $isActive = isset($c->estado) ? (bool)$c->estado : true;
-            @endphp
             <tr>
               <td>{{ $c->nombre }}</td>
-
-              <td>
-                @if($isActive)
-                  <span class="badge bg-success">Activo</span>
-                @else
-                  <span class="badge bg-secondary">Inactivo</span>
-                @endif
-              </td>
-
               <td class="d-flex gap-2 justify-content-center">
-                {{-- Editar (abre modal) --}}
+                {{-- Editar --}}
                 <button
                   type="button"
-                  class="btn btn-sm btn-primary btn-open-edit-cat"
+                  class="btn btn-sm btn-primary btn-open-edit"
                   data-bs-toggle="modal"
                   data-bs-target="#modalEditar"
                   data-idcategoria="{{ $c->idcategoria }}"
@@ -46,18 +71,16 @@
                   data-update-url="{{ route('categorias.update', $c->idcategoria) }}"
                 >Editar</button>
 
-                {{-- Dar de baja / Reactivar (abre modal) --}}
+                {{-- Eliminar --}}
                 <button
                   type="button"
-                  class="btn btn-sm {{ $isActive ? 'btn-warning' : 'btn-success' }} btn-open-baja-cat"
+                  class="btn btn-sm btn-danger btn-open-eliminar"
                   data-bs-toggle="modal"
-                  data-bs-target="#modalBaja"
+                  data-bs-target="#modalEliminar"
                   data-idcategoria="{{ $c->idcategoria }}"
                   data-nombre="{{ $c->nombre }}"
-                  data-activo="{{ $isActive ? 1 : 0 }}"
-                  data-inactivar-url="{{ route('categorias.inactivo', $c->idcategoria) }}"
-                  data-activar-url="{{ route('categorias.activo',   $c->idcategoria) }}"
-                >{{ $isActive ? 'Dar de baja' : 'Reactivar' }}</button>
+                  data-delete-url="{{ route('categorias.destroy', $c->idcategoria) }}"
+                >Eliminar</button>
               </td>
             </tr>
           @endforeach
@@ -67,105 +90,62 @@
   @endif
 </div>
 
-{{-- Modales específicos de categorías --}}
+{{-- Modales --}}
 @include('categorias._modal_editar')
 @include('categorias._modal_baja')
 
-{{-- Si hubo error de validación en nombre, reabrimos el modal de edición --}}
-@if ($errors->has('nombre'))
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var modal = new bootstrap.Modal(document.getElementById('modalEditar'));
-    modal.show();
-  });
-</script>
-@endif
-
-{{-- Limpia errores del modal al cerrarlo (igual que usuarios) --}}
+{{-- JS: fija actions, textos y colores (doble seguro: click y show.bs.modal) --}}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const modalEditar = document.getElementById('modalEditar');
-  if (modalEditar) {
-    modalEditar.addEventListener('hide.bs.modal', function () {
-      document.querySelectorAll('#modalEditar .text-danger').forEach(el => el.style.display = 'none');
-    });
-  }
-});
-</script>
-
-{{-- JS: fija actions, textos y colores (click + show.bs.modal), versión CATEGORÍAS --}}
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  // ==== EDITAR (click directo) ====
-  document.querySelectorAll('.btn-open-edit-cat').forEach(btn => {
+  // ==== EDITAR =====
+  document.querySelectorAll('.btn-open-edit').forEach(btn => {
     btn.addEventListener('click', () => {
       document.getElementById('edit_idcategoria').value = btn.dataset.idcategoria;
-      document.getElementById('edit_nombre').value      = btn.dataset.nombre || '';
+      document.getElementById('edit_nombre').value = btn.dataset.nombre || '';
       const f = document.getElementById('formEditarCategoria');
       if (f) f.action = btn.dataset.updateUrl || '#';
     });
   });
 
-  // ==== BAJA / REACTIVAR (click directo) ====
-  document.querySelectorAll('.btn-open-baja-cat').forEach(btn => {
+  // ==== ELIMINAR (click directo) ====
+  document.querySelectorAll('.btn-open-eliminar').forEach(btn => {
     btn.addEventListener('click', () => {
-      const activo = btn.dataset.activo === '1';
-      const id     = btn.dataset.idcategoria;
+      const id = btn.dataset.idcategoria;
       const nombre = btn.dataset.nombre || '';
-      const f      = document.getElementById('formBajaCategoria');
-      const msg    = document.getElementById('baja_message');
-      const hid    = document.getElementById('baja_idcategoria');
-      const sBtn   = document.getElementById('baja_submit_btn');
+      const f = document.getElementById('formEliminarCategoria');
+      const msg = document.getElementById('eliminar_message');
+      const hid = document.getElementById('eliminar_idcategoria');
 
       if (hid) hid.value = id;
       if (msg) {
-        msg.innerHTML = activo
-          ? `¿Estás seguro de dar de baja la categoría <strong>${nombre}</strong>?`
-          : `¿Deseas reactivar la categoría <strong>${nombre}</strong>?`;
+        msg.innerHTML = `¿Estás seguro de eliminar la categoría <strong>${nombre}</strong>? Esta acción no se puede deshacer.`;
       }
-      if (f) f.action = activo ? (btn.dataset.inactivarUrl || '#') : (btn.dataset.activarUrl || '#');
-
-      if (sBtn) {
-        sBtn.textContent = activo ? 'Sí, dar de baja' : 'Reactivar';
-        sBtn.classList.remove('btn-success','btn-warning','btn-danger');
-        sBtn.classList.add(activo ? 'btn-warning' : 'btn-success');
-      }
+      if (f) f.action = btn.dataset.deleteUrl || '#';
     });
   });
 
-  // ==== BAJA / REACTIVAR (fallback show.bs.modal) ====
-  const modalBajaEl = document.getElementById('modalBaja');
-  if (modalBajaEl) {
-    modalBajaEl.addEventListener('show.bs.modal', (ev) => {
+  // ==== ELIMINAR (fallback: show.bs.modal) ====
+  const modalEliminarEl = document.getElementById('modalEliminar');
+  if (modalEliminarEl) {
+    modalEliminarEl.addEventListener('show.bs.modal', (ev) => {
       const btn = ev.relatedTarget;
       if (!btn) return;
-      const activo = btn.getAttribute('data-activo') === '1';
-      const id     = btn.getAttribute('data-idcategoria');
+      const id = btn.getAttribute('data-idcategoria');
       const nombre = btn.getAttribute('data-nombre') || '';
-      const f      = document.getElementById('formBajaCategoria');
-      const msg    = document.getElementById('baja_message');
-      const hid    = document.getElementById('baja_idcategoria');
-      const sBtn   = document.getElementById('baja_submit_btn');
+      const f = document.getElementById('formEliminarCategoria');
+      const msg = document.getElementById('eliminar_message');
+      const hid = document.getElementById('eliminar_idcategoria');
 
       if (hid) hid.value = id;
       if (msg) {
-        msg.innerHTML = activo
-          ? `¿Estás seguro de dar de baja la categoría <strong>${nombre}</strong>?`
-          : `¿Deseas reactivar la categoría <strong>${nombre}</strong>?`;
+        msg.innerHTML = `¿Estás seguro de eliminar la categoría <strong>${nombre}</strong>? Esta acción no se puede deshacer.`;
       }
-      if (f) f.action = activo ? (btn.getAttribute('data-inactivar-url') || '#')
-                               : (btn.getAttribute('data-activar-url')   || '#');
-
-      if (sBtn) {
-        sBtn.textContent = activo ? 'Sí, dar de baja' : 'Reactivar';
-        sBtn.classList.remove('btn-success','btn-warning','btn-danger');
-        sBtn.classList.add(activo ? 'btn-warning' : 'btn-success');
-      }
+      if (f) f.action = btn.getAttribute('data-delete-url') || '#';
     });
   }
 
-  // Salvaguarda: evita POST sin action
-  ['formEditarCategoria','formBajaCategoria'].forEach(id => {
+  // Salvaguarda: evita POST incorrecto si faltara action
+  ['formEditarCategoria','formEliminarCategoria'].forEach(id => {
     const f = document.getElementById(id);
     if (f) {
       f.addEventListener('submit', e => {
@@ -177,57 +157,110 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
-</script>
 
-{{-- Validación AJAX del nombre (solo si cambia), igual que usuarios --}}
-<script>
+// Validación AJAX para nombre duplicado al editar
 document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('formEditarCategoria');
+    
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // 1. LIMPIAR ERRORES PREVIOS
+      form.querySelectorAll('.text-danger').forEach(el => el.remove());
+
+      // 2. OBTENER LOS VALORES ACTUALES
+      const nombreActual = document.getElementById('edit_nombre').value;
+      const idcategoria = document.getElementById('edit_idcategoria').value;
+
+      // 3. BOTÓN ORIGINAL PARA OBTENER EL NOMBRE ORIGINAL
+      const botonOriginal = document.querySelector('.btn-open-edit[data-idcategoria="' + idcategoria + '"]');
+      if (!botonOriginal) {
+        form.submit();
+        return;
+      }
+
+      const nombreOriginal = botonOriginal.dataset.nombre;
+
+      // 4. ¿CAMBIÓ EL NOMBRE?
+      if (nombreActual === nombreOriginal) {
+        form.submit();
+      } else {
+        // 5. VALIDAR CON AJAX SOLO SI CAMBIÓ
+        fetch("{{ route('categorias.validar-nombre') }}", {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+          },
+          body: JSON.stringify({ 
+            nombre: nombreActual, 
+            idcategoria: idcategoria 
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.duplicado) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'text-danger small mt-1';
+            errorDiv.textContent = 'La categoría ya ha sido registrada.';
+            document.getElementById('edit_nombre').after(errorDiv);
+          } else {
+            form.submit();
+          }
+        })
+        .catch(() => { form.submit(); });
+      }
+    });
+  }
+});
+</script>
+
+
+@if ($errors->has('nombre'))
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var modal = new bootstrap.Modal(document.getElementById('modalEditar'));
+    modal.show();
+  });
+</script>
+@endif
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const modalEditar = document.getElementById('modalEditar');
+  if (modalEditar) {
+    modalEditar.addEventListener('hide.bs.modal', function () {
+      // Oculta los mensajes de error al cerrar el modal
+      document.querySelectorAll('#modalEditar .text-danger').forEach(el => el.style.display = 'none');
+    });
+  }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('formRegistro');
   if (!form) return;
 
+  const nombreInput = document.getElementById('nombre');
+  
+  // Validación en tiempo real
+  nombreInput.addEventListener('input', function() {
+    if (nombreInput.value.trim() === '') {
+      nombreInput.classList.add('is-invalid');
+    } else {
+      nombreInput.classList.remove('is-invalid');
+    }
+  });
+
+  // Validación al enviar
   form.addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    // 1) limpiar errores previos
-    form.querySelectorAll('.text-danger').forEach(el => el.remove());
-
-    // 2) valores actuales
-    const nombreActual = document.getElementById('edit_nombre')?.value ?? '';
-    const idCategoria  = document.getElementById('edit_idcategoria')?.value ?? '';
-
-    // 3) buscar botón original para obtener nombre original
-    const botonOriginal = document.querySelector('.btn-open-edit-cat[data-idcategoria="' + idCategoria + '"]');
-    if (!botonOriginal) { form.submit(); return; }
-
-    const nombreOriginal = botonOriginal.dataset.nombre ?? '';
-
-    // 4) si no cambió, enviar normal
-    if (nombreActual === nombreOriginal) { form.submit(); return; }
-
-    // 5) validar con AJAX
-    fetch("{{ route('categorias.validar-nombre') }}", {
-      method: 'POST',
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-      },
-      body: JSON.stringify({
-        nombre: nombreActual,
-        idcategoria: idCategoria
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.duplicado) {
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'text-danger small mt-1';
-        errorDiv.textContent = 'La categoría ya ha sido registrada.';
-        document.getElementById('edit_nombre').after(errorDiv);
-      } else {
-        form.submit();
-      }
-    })
-    .catch(() => form.submit());
+    if (nombreInput.value.trim() === '') {
+      e.preventDefault();
+      nombreInput.classList.add('is-invalid');
+      nombreInput.focus();
+    }
   });
 });
 </script>

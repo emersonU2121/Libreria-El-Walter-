@@ -148,7 +148,7 @@ class MarcaController extends Controller
 
     public function destroy(Request $request, $id)
 {
-    $marca = Marca::find($id);
+    $marca = marca::find($id);
 
     if (!$marca) {
         if ($request->expectsJson()) {

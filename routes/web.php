@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Usuario;
-use App\Models\Marca;
+use App\Models\marca;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\ProductoController;

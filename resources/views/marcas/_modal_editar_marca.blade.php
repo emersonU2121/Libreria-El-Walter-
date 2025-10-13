@@ -11,7 +11,7 @@
         </div>
 
         <div class="modal-body">
-          <input type="hidden" name="idMarca" id="edit_idmarca">
+          <input type="hidden" name="idmarca" id="edit_idmarca">
 
           <div class="mb-3">
             <label for="edit_nombre" class="form-label">Nombre de la Marca</label>

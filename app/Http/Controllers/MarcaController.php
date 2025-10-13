@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\marca;
-use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -24,12 +23,18 @@ class MarcaController extends Controller
         return response()->json($marcas, 200);
     }
 
+    public function mostrar()
+{
+    $marcas = marca::all();
+    return view('marcas.mostrar_marca', compact('marcas'));
+}
+
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        return view('marcas.Registrar');
+        return view('marcas.registrar_marca');
     }
 
     /**
@@ -39,13 +44,13 @@ class MarcaController extends Controller
     {
         //
         $validator = Validator::make($request->all(), [
-             'nombre' => 'required|string|max:255|unique:usuario,nombre'
+             'nombre' => 'required|string|max:255|unique:marca,nombre'
         ],[
             
             'nombre.unique' => 'La marca ya ha sido registrado.'
         ]);
 
-        if($validator->fail())
+        if($validator->fails())
         {
             if(!$request->expectsJson()){
                 return back()->withErrors($validator)->withInput();
@@ -56,13 +61,13 @@ class MarcaController extends Controller
                 'status'  => 400,
             ], 400);
         }
-        $marca = new Marca();
+        $marca = new marca();
         $marca->nombre = $request->input('nombre');
         $marca->save();
 
         if(!$request->expectsJson()){
             return redirect()
-            ->route('marcas.registrar')
+            ->route('marcas.mostrar')
             ->with('ok', 'Marca registrada exitosamente');
         }
         return response()->json([
@@ -77,7 +82,7 @@ class MarcaController extends Controller
     public function show($id)
     {
         //
-        $marca = Marca::find($id);
+        $marca = marca::find($id);
         if(!$marca)
         {
             return response()->json(['message'=> 'Marca no encontrada', 'status'=> 404], 404);
@@ -92,77 +97,121 @@ class MarcaController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, $id)
-    {
-        $marca = Marca::find($id);
+{
+    $marca = Marca::find($id);
 
-        if(!$marca){
-           if($request->expectsJson()){
-                return back()->with('error', 'No se han encontrado marcas');
-           }
+    if(!$marca){
+        if($request->expectsJson()){
             return response()->json([
-            'succes'=>false,
-            'message'=>'No se han encontrado marcas'
-        ], 404);
-
+                'success'=>false,
+                'message'=>'No se han encontrado marcas'
+            ], 404);
         }
+        return back()->with('error', 'No se han encontrado marcas');
+    }
+
+    // Validación corregida
+    $validator = Validator::make($request->all(), [
+        'nombre' => ['required', 'string', 'max:255', 'unique:marca,nombre,'.$id.',idmarca']
+    ],[
+        'nombre.unique' => 'La marca ya ha sido registrada.'
+    ]);
+
+    if($validator->fails()){
+        if(!$request->expectsJson()){
+            return back()->withErrors($validator)->withInput()->with('modal','editar');
+        }
+        return response()->json([
+            'message' => 'Error de validacion',
+            'errors'  => $validator->errors(),
+            'status'  => 400,
+        ], 400);
+    }
+
+    if($request->has('nombre')){
+        $marca->nombre = $request->input('nombre');
+    }
+    
+    $marca->save();
+
+    if(!$request->expectsJson()){
+    
+        return redirect()->route('marcas.mostrar')->with('ok', 'Marca actualizada exitosamente');
+    }
+    
+    return response()->json([
+        'message' => 'Marca actualizada exitosamente',
+        'status'  => 200,
+    ], 200);
+}
+
+
+    public function destroy(Request $request, $id)
+{
+    $marca = Marca::find($id);
+
+    if (!$marca) {
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Marca no encontrada'], 404);
+        }
+        return back()->with('error', 'Marca no encontrada');
+    }
+
+    try {
+        // Verificar si hay productos asociados a esta marca
+        if (\App\Models\Producto::where('idMarca', $id)->exists()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'No se puede eliminar la marca porque tiene productos asociados',
+                    'status' => 400
+                ], 400);
+            }
+            return back()->with('error', 'No se puede eliminar la marca porque tiene productos asociados');
+        }
+
+        $marca->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Marca eliminada correctamente', 
+                'status' => 200
+            ], 200);
+        }
+
+        return redirect()->route('marcas.mostrar')->with('ok', 'Marca eliminada correctamente');
         
-
-        $validator = Validator::make($request->all(), [
-            'nombre'=> ['required','string','max:255','unique::marca,nombre'.$id.'idMarca']
-        ],[
-            'nombre.unique'=> 'La marca ya ha sido registrada.'
-        ]);
-
-        if($validator->fails()){
-            if(!$request->expectsJson()){
-                return back()->withErrors($validator)->withInput()->with('modal','editar');
-            }
-         }
-
-         if($request->has('nombre')){
-                $marca->nombre = $request->input('nombre');
-            }
-        $marca->save();
-    }
-
-    //validar marca
-    public function validarMarca(Request $request)
-    {
-        $nombre = $request->input('nombre');
-        $idMarca = $request->input('idMarca');
-        $existe = \App\Models\Marca::where('nombre', $nombre)
-        ->when($idMarca, function($query) use ($idMarca) {
-            $query->where('idMarca', '!=', $idMarca);
-        })
-        ->exists();
-
-        return response()->json(['duplicado'=>$existe]);
-    }
-     public function destroy(Request $request, $id)
-    {
-        $marca = Marca::find($id);
-
-        if (!$marca) {
+    } catch (\Illuminate\Database\QueryException $e) {
+        // Capturar error de clave foránea
+        $errorCode = $e->errorInfo[1];
+        
+        if ($errorCode == 1451) { // Código de error para restricción de clave foránea
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'Marca no encontrada'], 404);
+                return response()->json([
+                    'message' => 'No se puede eliminar la marca porque está siendo utilizada en otros registros',
+                    'status' => 400
+                ], 400);
             }
-            return back()->with('error', 'Marca no encontrada');
+            return back()->with('error', 'No se puede eliminar la marca porque está siendo utilizada en productos');
         }
 
-        try {
-            $marca->delete();
-
-            if ($request->expectsJson()) {
-                return response()->json(['message' => 'Marca eliminada correctamente', 'status' => 200], 200);
-            }
-
-            return redirect()->route('marcas.index')->with('ok', 'Marca eliminada correctamente');
-        } catch (\Throwable $e) {
-            if ($request->expectsJson()) {
-                return response()->json(['message' => 'Error al eliminar la marca', 'error' => $e->getMessage()], 500);
-            }
-            return back()->with('error', 'Error al eliminar la marca');
+        // Otro tipo de error
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Error al eliminar la marca', 
+                'error' => $e->getMessage()
+            ], 500);
         }
+        return back()->with('error', 'Error al eliminar la marca: ' . $e->getMessage());
+        
+    } catch (\Throwable $e) {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Error al eliminar la marca', 
+                'error' => $e->getMessage()
+            ], 500);
+        }
+        return back()->with('error', 'Error al eliminar la marca');
     }
+}
    
 }

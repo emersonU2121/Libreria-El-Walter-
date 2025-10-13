@@ -13,6 +13,7 @@ class marca extends Model
     protected $table = 'marca';
     protected $primaryKey = 'idmarca';
 
+    public $incrementing = true;
     public $timestamps = true;
 
 

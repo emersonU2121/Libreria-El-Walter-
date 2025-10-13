@@ -11,8 +11,8 @@
       <table class="table table-bordered table-striped text-center align-middle">
         <thead class="table-dark">
           <tr>
-            <!--<th>N°</th>-->
-            <th>Usuario</th>
+            <th>ID</th>
+            <th>Nombre</th>
             <th>Correo</th>
             <th>Rol</th>
             <th>Estado</th>
@@ -23,7 +23,7 @@
           @foreach($usuarios as $u)
             @php $isActive = isset($u->activo) ? (bool)$u->activo : true; @endphp
             <tr>
-              <!--<td>{{ $u->idusuario }}</td>-->
+              <td>{{ $u->idusuario }}</td>
               <td>{{ $u->nombre }}</td>
               <td>{{ $u->correo }}</td>
               <td>{{ $u->rol ?? 'Sin rol' }}</td>
@@ -72,27 +72,6 @@
 {{-- Modales --}}
 @include('usuarios._modal_editar')
 @include('usuarios._modal_baja')
-
-@if ($errors->has('nombre') || $errors->has('correo'))
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var modal = new bootstrap.Modal(document.getElementById('modalEditar'));
-    modal.show();
-  });
-</script>
-@endif
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const modalEditar = document.getElementById('modalEditar');
-  if (modalEditar) {
-    modalEditar.addEventListener('hide.bs.modal', function () {
-      // Oculta los mensajes de error al cerrar el modal
-      document.querySelectorAll('#modalEditar .text-danger').forEach(el => el.style.display = 'none');
-    });
-  }
-});
-</script>
 
 {{-- JS: fija actions, textos y colores (doble seguro: click y show.bs.modal) --}}
 <script>
@@ -181,83 +160,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('formEditarUsuario');
-    
-    form.addEventListener('submit', function(e) {
-        e.preventDefault(); // Detenemos el envío normal del formulario
-
-        // 1. LIMPIAR ERRORES PREVIOS
-        console.log('🔧 Limpiando errores previos...');
-        form.querySelectorAll('.text-danger').forEach(el => el.remove());
-
-        // 2. OBTENER LOS VALORES ACTUALES
-        const nombreActual = document.getElementById('edit_nombre').value;
-        const idusuario = document.getElementById('edit_idusuario').value;
-        
-        console.log(' Nombre actual:', nombreActual);
-        console.log(' ID usuario:', idusuario);
-
-        // 3. BUSCAR EL BOTÓN ORIGINAL PARA OBTENER EL NOMBRE ORIGINAL
-        const botonOriginal = document.querySelector('.btn-open-edit[data-idusuario="' + idusuario + '"]');
-        
-        if (!botonOriginal) {
-            console.error('❌ No se encontró el botón original');
-            form.submit(); // Envía por si acaso
-            return;
-        }
-
-        const nombreOriginal = botonOriginal.dataset.nombre;
-        console.log('Nombre original:', nombreOriginal);
-
-        // 4. COMPARAR: ¿EL NOMBRE CAMBIÓ?
-        if (nombreActual === nombreOriginal) {
-            console.log('Nombre no cambió - Enviando formulario directamente');
-            form.submit(); // Envía sin validar
-        } else {
-            console.log('Nombre cambió - Validando con AJAX...');
-            
-            // 5. VALIDAR CON AJAX SOLO SI CAMBIÓ
-            fetch("{{ route('usuarios.validar-nombre') }}", {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                },
-                body: JSON.stringify({ 
-                    nombre: nombreActual, 
-                    idUsuario: idusuario 
-                })
-            })
-            .then(res => {
-                console.log('Respuesta del servidor recibida');
-                return res.json();
-            })
-            .then(data => {
-                console.log('Datos recibidos:', data);
-                
-                if (data.duplicado) {
-                    console.log('❌ Nombre duplicado encontrado');
-                    // Mostrar error debajo del input
-                    const errorDiv = document.createElement('div');
-                    errorDiv.className = 'text-danger small mt-1';
-                    errorDiv.textContent = 'El usuario ya ha sido registrado.';
-                    document.getElementById('edit_nombre').after(errorDiv);
-                } else {
-                    console.log(' Nombre disponible - Enviando formulario');
-                    form.submit(); // Envía el formulario
-                }
-            })
-            .catch(error => {
-                console.error('Error en la validación:', error);
-                console.log('Enviando formulario a pesar del error');
-                form.submit(); // En caso de error, envía igualmente
-            });
-        }
-    });
-});
-    
 </script>
 @endsection

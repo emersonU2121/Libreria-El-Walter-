@@ -26,12 +26,20 @@
             <!-- NUEVO MENÚ CON TUS BOTONES Y VALIDACIONES -->
             <div class="input me-auto">
                 <!-- BOTONES BÁSICOS (SIEMPRE VISIBLES) -->
-                <a href="#" class="value text-decoration-none">
-                    <svg class="normal" viewBox="0 0 24 24">
-                        <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z" fill="currentColor"/>
-                    </svg>
-                    Marcas
-                </a>
+
+                                {{-- === Marca (dropdown) === --}}
+<div class="dropdown d-inline-block">
+  <a class="value text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <svg class="normal" viewBox="0 0 24 24" style="width:20px;height:20px;vertical-align:middle;">
+      <path d="M16 6V4H8v2H2v2h2l2.6 9.59A2 2 0 008.53 20H15.5a2 2 0 001.93-1.49L20 8h2V6h-6zM9 6h6v2H9V6zm6.5 12h-7l-2-8h11l-2 8z" fill="currentColor"/>
+    </svg>
+    Marcas
+  </a>
+  <ul class="dropdown-menu">
+    <li><a class="dropdown-item" href="{{ route('marcas.registrar') }}">Registrar Marca</a></li>
+    <li><a class="dropdown-item" href="{{ route('marcas.mostrar') }}">Mostrar Marca</a></li>
+  </ul>
+</div>
                 
                 <a href="#" class="value text-decoration-none">
                     <svg class="normal" viewBox="0 0 24 24">
@@ -78,6 +86,20 @@
                     </div>
                     @endif
                 @endauth
+
+                {{-- === PRODUCTOS (dropdown) === --}}
+<div class="dropdown d-inline-block">
+  <a class="value text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <svg class="normal" viewBox="0 0 24 24" style="width:20px;height:20px;vertical-align:middle;">
+      <path d="M16 6V4H8v2H2v2h2l2.6 9.59A2 2 0 008.53 20H15.5a2 2 0 001.93-1.49L20 8h2V6h-6zM9 6h6v2H9V6zm6.5 12h-7l-2-8h11l-2 8z" fill="currentColor"/>
+    </svg>
+    Productos
+  </a>
+  <ul class="dropdown-menu">
+    <li><a class="dropdown-item" href="{{ route('productos.registrar') }}">Registrar producto</a></li>
+    <li><a class="dropdown-item" href="{{ route('productos.mostrar') }}">Mostrar productos</a></li>
+  </ul>
+</div>
             </div>
             
             <!-- MENÚ DE PERFIL (MANTIENE TODAS TUS VALIDACIONES) -->

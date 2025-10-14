@@ -56,6 +56,26 @@
       @error('precio')<div class="text-danger small">{{ $message }}</div>@enderror
     </div>
 
+    {{-- PRECIO_VENTA (igual que precio) --}}
+    <div class="mb-3">
+      <label for="precio_venta" class="form-label">Precio de venta</label>
+      <input
+        type="text"
+        inputmode="decimal"
+        id="precio_venta"
+        name="precio_venta"
+        class="form-control"
+        placeholder="0,00 o 0.00"
+        value="{{ old('precio_venta') }}"
+        required
+      >
+      <small class="text-muted">Solo números y hasta 2 decimales. Ej: 2,50 o 2.50</small>
+      @error('precio_venta')<div class="text-danger small">{{ $message }}</div>@enderror
+      @error('precio_venta')<div class="text-danger small">{{ $message }}</div>@enderror
+<div id="err_pv_create" class="text-danger small d-none">El precio de venta no puede ser menor que el precio unitario.</div>
+
+    </div>
+
     {{-- STOCK --}}
     <div class="mb-3">
       <label for="stock" class="form-label">Existencias</label>
@@ -124,35 +144,37 @@
     idp.value = v;
   });
 
-  // ===== PRECIO: permite coma o punto; máx 2 decimales =====
-  const price = document.getElementById('precio');
+  // ===== PRECIO & PRECIO_VENTA: coma o punto; máx 2 decimales =====
+  const price       = document.getElementById('precio');
+  const priceVenta  = document.getElementById('precio_venta');
 
   function formatPrice(raw) {
     let s = (raw || '').toString().replace(/[^0-9.,]/g, '');
-
     const sepIndex = s.search(/[.,]/);
     if (sepIndex === -1) {
       return s.replace(/[.,]/g,'').replace(/^0+(?=\d)/,'');
     }
-
     const sep = s[sepIndex]; // ',' o '.'
     const ent = s.slice(0, sepIndex).replace(/[.,]/g,'').replace(/^0+(?=\d)/,'');
     const dec = s.slice(sepIndex + 1).replace(/[.,]/g,'').slice(0, 2);
     const entFinal = ent.length ? ent : '0';
-
     return dec.length ? (entFinal + sep + dec) : (entFinal + sep);
   }
 
-  price.addEventListener('input', () => {
-    price.value = formatPrice(price.value);
+  [price, priceVenta].forEach(inp => {
+    inp.addEventListener('input', () => {
+      inp.value = formatPrice(inp.value);
+    });
   });
 
   // Normalizar antes de enviar: coma -> punto y quitar separador final suelto
   const form = document.getElementById('formProducto');
   form.addEventListener('submit', () => {
-    let v = (price.value || '').trim();
-    if (/[.,]$/.test(v)) v = v.slice(0, -1);
-    price.value = v.replace(',', '.');
+    [price, priceVenta].forEach(el => {
+      let v = (el.value || '').trim();
+      if (/[.,]$/.test(v)) v = v.slice(0, -1);
+      el.value = v.replace(',', '.');
+    });
   });
 
   // ===== Estado automático + aviso de stock bajo =====
@@ -168,4 +190,54 @@
   document.addEventListener('DOMContentLoaded', recompute);
 })();
 </script>
+<script>
+// === Validar que el precio de venta no sea menor que el precio (Registrar) ===
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('formProducto');
+  if (!form) return;
+
+  const price = document.getElementById('precio');
+  const pv = document.getElementById('precio_venta');
+
+  // Crear mensaje de error dinámico si no existe
+  let errPv = document.getElementById('err_pv_create');
+  if (!errPv) {
+    errPv = document.createElement('div');
+    errPv.id = 'err_pv_create';
+    errPv.className = 'text-danger small d-none';
+    errPv.textContent = 'El precio de venta no puede ser menor que el precio.';
+    pv.parentElement.appendChild(errPv);
+  }
+
+  form.addEventListener('submit', (e) => {
+    let vP = (price.value || '').trim();
+    let vPV = (pv.value || '').trim();
+
+    // Normaliza los valores (coma -> punto)
+    if (/[.,]$/.test(vP)) vP = vP.slice(0, -1);
+    if (/[.,]$/.test(vPV)) vPV = vPV.slice(0, -1);
+    vP = vP.replace(',', '.');
+    vPV = vPV.replace(',', '.');
+
+    const nP = parseFloat(vP) || 0;
+    const nPV = parseFloat(vPV) || 0;
+
+    // Validar
+    if (nPV < nP) {
+      e.preventDefault();
+      pv.classList.add('is-invalid');
+      errPv.classList.remove('d-none');
+      return;
+    } else {
+      pv.classList.remove('is-invalid');
+      errPv.classList.add('d-none');
+    }
+
+    // reasigna valores normalizados antes de enviar
+    price.value = vP;
+    pv.value = vPV;
+  });
+});
+</script>
+
 @endsection

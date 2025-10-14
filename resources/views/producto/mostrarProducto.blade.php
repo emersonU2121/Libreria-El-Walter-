@@ -33,6 +33,7 @@
           <tr>
             <th>Nombre</th>
             <th>Precio unitario</th>
+            <th>Precio de venta</th> {{-- << agregado --}}
             <th>Existencias</th>
             <th>Estado</th>
             <th>Marca</th>
@@ -60,6 +61,7 @@
           <tr class="{{ $esBajo ? 'table-warning' : '' }}">
             <td>{{ $p->nombre }}</td>
             <td>${{ number_format($p->precio,2) }}</td>
+            <td>${{ number_format($p->precio_venta,2) }}</td> {{-- << agregado --}}
             <td>
               {{ $p->stock }}
               @if($stockVal === 0)
@@ -90,6 +92,7 @@
                 data-idproducto="{{ $p->idproducto }}"
                 data-nombre="{{ $p->nombre }}"
                 data-precio="{{ $p->precio }}"
+                data-precio_venta="{{ $p->precio_venta }}" {{-- << agregado --}}
                 data-stock="{{ $p->stock }}"
                 data-estado="{{ $p->estado }}"
                 data-idmarca="{{ $p->idmarca }}"
@@ -131,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const f = document.getElementById('formEditarProducto');
       if (f) f.action = btn.dataset.updateUrl || '#';
 
-      ['idproducto','nombre','precio','stock','idmarca','idcategoria'].forEach(k => {
+      ['idproducto','nombre','precio','precio_venta','stock','idmarca','idcategoria'].forEach(k => { // << agregado precio_venta
         const el = document.getElementById('edit_'+k);
         if (el) el.value = btn.dataset[k] ?? '';
       });
@@ -141,8 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const estView = document.getElementById('edit_estado_view');
       const hint = document.getElementById('edit_low_hint');
       const n = parseInt(s.value || '0', 10);
-      estView.value = (n > 0) ? 'disponible' : 'agotado';
-      if (n > 0 && n <= 5) hint.classList.remove('d-none'); else hint.classList.add('d-none');
+      if (estView) estView.value = (n > 0) ? 'disponible' : 'agotado';
+      if (hint) { if (n > 0 && n <= 5) hint.classList.remove('d-none'); else hint.classList.add('d-none'); }
     });
   });
 

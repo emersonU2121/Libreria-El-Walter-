@@ -41,8 +41,40 @@
 </div>
 
 
+
+
 <div style="margin: auto" class="card shadow p-4 w-100">
   <h2 class="mb-4 text-center">Lista de Marcas</h2>
+
+  <div class="card-body">
+        <form action="{{ route('marcas.mostrar') }}" method="GET" class="row g-3 align-items-center">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <input type="text" 
+                           name="buscar" 
+                           class="form-control" 
+                           placeholder="Buscar marcas por nombre..." 
+                           value="{{ request('buscar') }}"
+                           aria-label="Buscar marcas">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                @if(request('buscar'))
+                    <div class="d-flex align-items-center">
+                        <span class="text-muted me-2">
+                            Resultados para: "{{ request('buscar') }}"
+                        </span>
+                        <a href="{{ route('marcas.mostrar') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-times"></i> Limpiar
+                        </a>
+                    </div>
+                @endif
+            </div>
+        </form>
+    </div>
 
   @if($marcas->isEmpty())
     <div class="alert alert-warning text-center">No hay marcas registradas.</div>

@@ -23,10 +23,18 @@ class MarcaController extends Controller
         return response()->json($marcas, 200);
     }
 
-    public function mostrar()
+    public function mostrar(Request $request)
 {
-    $marcas = marca::all();
-    return view('marcas.mostrar_marca', compact('marcas'));
+   /** $marcas = marca::all();
+    *return view('marcas.mostrar_marca', compact('marcas')); 
+    */
+    $buscar = $request->get('buscar');
+
+    $marcas = marca::when($buscar, function($query, $buscar){
+        return $query->where('nombre', 'like', "%{$buscar}%");
+    })->get();
+    
+    return view('marcas.mostrar_marca', compact('marcas', 'buscar'));
 }
 
     /**

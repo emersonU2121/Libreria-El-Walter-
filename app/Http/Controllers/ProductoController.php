@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage; // 👈 AÑADE ESTO
+
 use App\Models\Producto;
 
 class ProductoController extends Controller
@@ -60,6 +62,7 @@ class ProductoController extends Controller
     {
         $validated = $request->validate([
             'idproducto'   => ['required','regex:/^(?!0+$)\d{1,20}$/','unique:producto,idproducto'],
+            'imagen'       => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
             'nombre'       => 'required|string|max:255|unique:producto,nombre',
             'precio'       => ['required','regex:/^\d{1,9}([.,]\d{1,2})?$/'],
             'precio_venta' => ['required','regex:/^\d{1,9}([.,]\d{1,2})?$/'], // << agregado
@@ -69,8 +72,13 @@ class ProductoController extends Controller
         ],[
             'idproducto.regex'     => 'El ID debe tener 1–20 dígitos y no iniciar en 0.',
             'idproducto.unique'    => 'El ID de producto ya existe.',
+            'imagen.image'        => 'El archivo debe ser una imagen.',
+            'imagen.mimes'        => 'Formatos permitidos: jpg, jpeg, png, webp.',
+            'imagen.max'          => 'La imagen no debe superar 2MB.',
             'precio.regex'         => 'El precio debe tener solo números y hasta 2 decimales.',
             'precio_venta.regex'   => 'El precio de venta debe tener solo números y hasta 2 decimales.',
+            'stock.integer'       => 'Stock inválido.',
+
         ]);
 
         $precio       = number_format((float)str_replace(',', '.', $validated['precio']), 2, '.', '');
@@ -93,6 +101,13 @@ class ProductoController extends Controller
         $p->estado       = $p->stock > 0 ? 'disponible' : 'agotado';
         $p->save();
 
+ if ($request->hasFile('imagen')) {
+            $path = $request->file('imagen')->store('productos', 'public');
+            $p->imagen = $path; // guarda ruta relativa dentro de "storage"
+            $p->save();
+        }
+
+
         return redirect()->route('productos.mostrar')->with('ok','Producto creado exitosamente');
     }
 
@@ -106,65 +121,58 @@ class ProductoController extends Controller
         return redirect()->route('productos.mostrar')->with('error','Producto no encontrado');
     }
 
-    // === Validaciones iguales a Registrar para precio y precio_venta ===
     $validated = $request->validate([
         'nombre'        => ['sometimes','string','max:255','unique:producto,nombre,'.$id.',idproducto'],
-        'precio'        => ['sometimes','regex:/^\d{1,9}([.,]\d{1,2})?$/'],         // igual que store
-        'precio_venta'  => ['sometimes','regex:/^\d{1,9}([.,]\d{1,2})?$/'],         // igual que store
+        'imagen'        => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
+        'precio'        => ['sometimes','regex:/^\d{1,9}([.,]\d{1,2})?$/'],
+        'precio_venta'  => ['sometimes','regex:/^\d{1,9}([.,]\d{1,2})?$/'],
         'stock'         => ['sometimes','integer','min:0'],
         'idmarca'       => ['sometimes','integer','exists:marca,idmarca'],
         'idcategoria'   => ['sometimes','integer','exists:categoria,idcategoria'],
     ],[
-        'nombre.unique'       => 'El nombre de producto ya ha sido registrado.',
-        'precio.regex'        => 'El precio debe tener solo números y hasta 2 decimales (coma o punto).',
-        'precio_venta.regex'  => 'El precio de venta debe tener solo números y hasta 2 decimales (coma o punto).',
+        'imagen.image' => 'El archivo debe ser una imagen.',
+        'imagen.mimes' => 'Formatos permitidos: jpg, jpeg, png, webp.',
+        'imagen.max'   => 'La imagen no debe superar 2MB.',
+        'nombre.unique'      => 'El nombre de producto ya ha sido registrado.',
+        'precio.regex'       => 'El precio debe tener solo números y hasta 2 decimales (coma o punto).',
+        'precio_venta.regex' => 'El precio de venta debe tener solo números y hasta 2 decimales (coma o punto).',
     ]);
 
-    // === Normalización igual a Registrar (coma -> punto, 2 decimales) ===
+    // Normaliza precios
     if (array_key_exists('precio', $validated)) {
-        $validated['precio'] = number_format(
-            (float)str_replace(',', '.', $validated['precio']), 2, '.', ''
-        );
+        $validated['precio'] = number_format((float)str_replace(',', '.', $validated['precio']), 2, '.', '');
     }
     if (array_key_exists('precio_venta', $validated)) {
-        $validated['precio_venta'] = number_format(
-            (float)str_replace(',', '.', $validated['precio_venta']), 2, '.', ''
-        );
+        $validated['precio_venta'] = number_format((float)str_replace(',', '.', $validated['precio_venta']), 2, '.', '');
     }
 
-    // Estado depende de stock (como ya lo tienes)
     if (array_key_exists('stock', $validated)) {
         $validated['estado'] = ((int)$validated['stock'] > 0) ? 'disponible' : 'agotado';
     }
 
     $precioEfectivo = array_key_exists('precio', $validated) ? (float)$validated['precio'] : (float)$p->precio;
-$pvEfectivo     = array_key_exists('precio_venta', $validated) ? (float)$validated['precio_venta'] : (float)$p->precio_venta;
+    $pvEfectivo     = array_key_exists('precio_venta', $validated) ? (float)$validated['precio_venta'] : (float)$p->precio_venta;
+    if ($pvEfectivo < $precioEfectivo) {
+        return back()->withErrors(['precio_venta' => 'El precio de venta no puede ser menor que el precio.'])->withInput();
+    }
 
-if ($pvEfectivo < $precioEfectivo) {
-    return back()
-        ->withErrors(['precio_venta' => 'El precio de venta no puede ser menor que el precio.'])
-        ->withInput();
-}
+    // ⚠️ Manejar imagen primero y luego quitarla del array
+    if ($request->hasFile('imagen')) {
+        if ($p->imagen) {
+            Storage::disk('public')->delete($p->imagen);
+        }
+        $p->imagen = $request->file('imagen')->store('productos', 'public'); // p.ej. "productos/abc.webp"
+    }
+    // Evita que fill() sobrescriba lo anterior
+    unset($validated['imagen']);
 
-    $p->fill($validated)->save();
+    // Resto de campos
+    $p->fill($validated);
+    $p->save();
 
     return redirect()->route('productos.mostrar')->with('ok','Producto actualizado correctamente');
 }
 
-
-    // ============================
-    //  Marcar producto inactivo
-    // ============================
-    public function inactivo($id)
-    {
-        $p = Producto::find($id);
-        if (!$p) return back()->with('error','Producto no encontrado');
-
-        $p->estado = 'agotado';
-        $p->save();
-
-        return back()->with('ok','Producto dado de baja (agotado)');
-    }
 
     // ============================
     //  Reactivar producto

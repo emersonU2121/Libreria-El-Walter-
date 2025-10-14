@@ -1,4 +1,4 @@
-@extends('menu')
+@extends('menu') 
 
 @section('contenido')
 <style>
@@ -60,7 +60,8 @@
     </div>
     @endif
 
-    <form action="{{ route('productos.store') }}" method="post" autocomplete="off" id="formProducto">
+    {{-- 👇 Agregado: enctype para permitir archivos --}}
+    <form action="{{ route('productos.store') }}" method="post" autocomplete="off" id="formProducto" enctype="multipart/form-data">
         @csrf
 
         <div class="row">
@@ -75,6 +76,21 @@
                     <small class="text-muted">Solo números, máximo 13 y mínimo 8.</small>
                     @error('idproducto')<div class="text-danger small">{{ $message }}</div>@enderror
                 </div>
+
+                {{-- 👇 NUEVO: IMAGEN (antes del nombre) --}}
+                <div class="campo-formulario">
+                    <label for="imagen" class="form-label">Imagen del producto (opcional)</label>
+                    <input type="file" id="imagen" name="imagen" class="form-control"
+                           accept="image/jpeg,image/png,image/webp">
+                    <small class="text-muted d-block">Formatos: JPG, PNG o WEBP. Máx 2MB.</small>
+                    @error('imagen')<div class="text-danger small">{{ $message }}</div>@enderror
+
+                    {{-- Preview --}}
+                    <div class="mt-2">
+                        <img id="preview_nueva" src="#" alt="" style="max-height:120px; display:none; border:1px solid #eee; padding:4px; border-radius:6px;">
+                    </div>
+                </div>
+                {{-- 👆 NUEVO FIN --}}
 
                 {{-- NOMBRE --}}
                 <div class="campo-formulario">
@@ -277,6 +293,21 @@ document.addEventListener('DOMContentLoaded', () => {
         price.value = vP;
         pv.value = vPV;
     });
+});
+</script>
+
+{{-- 👇 NUEVO: Preview instantánea de la imagen --}}
+<script>
+document.getElementById('imagen')?.addEventListener('change', (e) => {
+  const [file] = e.target.files || [];
+  const img = document.getElementById('preview_nueva');
+  if (file && img) {
+    img.src = URL.createObjectURL(file);
+    img.style.display = 'inline-block';
+  } else if (img) {
+    img.src = '#';
+    img.style.display = 'none';
+  }
 });
 </script>
 

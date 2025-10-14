@@ -12,7 +12,8 @@
 <div class="modal fade" id="modalEditarProducto" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <form action="" method="post" id="formEditarProducto">
+      {{-- 👇 Agregado: enctype para permitir archivo --}}
+      <form action="" method="post" id="formEditarProducto" enctype="multipart/form-data">
         @csrf @method('PUT')
         <div class="modal-header">
           <h5 class="modal-title">Editar producto</h5>
@@ -22,31 +23,44 @@
         <div class="modal-body">
           <input type="hidden" name="idproducto" id="edit_idproducto">
 
+          {{-- 👇 NUEVO: Imagen actual + reemplazo (antes de Nombre) --}}
+          <div class="mb-3">
+            <label class="form-label d-block">Imagen actual</label>
+            <img id="edit_preview_img" src="#" alt="Imagen producto"
+                 style="max-height:140px;border:1px solid #eee;padding:4px;border-radius:6px;">
+          </div>
+
+          <div class="mb-3">
+            <label for="edit_imagen" class="form-label">Reemplazar imagen (opcional)</label>
+            <input type="file" id="edit_imagen" name="imagen" class="form-control"
+                   accept="image/jpeg,image/png,image/webp">
+            <small class="text-muted">Si seleccionas un archivo, se reemplaza la imagen actual (máx 2MB).</small>
+            @error('imagen')<div class="text-danger small">{{ $message }}</div>@enderror
+          </div>
+          {{-- 👆 FIN NUEVO --}}
+
           <div class="mb-3">
             <label for="edit_nombre" class="form-label">Nombre</label>
             <input type="text" id="edit_nombre" name="nombre" class="form-control" required>
           </div>
 
-         <div class="mb-3">
-  <label for="edit_precio" class="form-label">Precio unitario</label>
-  <input type="text" inputmode="decimal" id="edit_precio" name="precio" class="form-control" placeholder="0,00 o 0.00" required>
-  <small class="text-muted">Solo números y hasta 2 decimales.</small>
-</div>
+          <div class="mb-3">
+            <label for="edit_precio" class="form-label">Precio unitario</label>
+            <input type="text" inputmode="decimal" id="edit_precio" name="precio" class="form-control" placeholder="0,00 o 0.00" required>
+            <small class="text-muted">Solo números y hasta 2 decimales.</small>
+          </div>
 
-<div class="mb-3">
-  <label for="edit_precio_venta" class="form-label">Precio de venta</label>
-  <input type="text" inputmode="decimal" id="edit_precio_venta" name="precio_venta" class="form-control" placeholder="0,00 o 0.00" required>
-  <small class="text-muted">Solo números y hasta 2 decimales.</small>
-  <div id="err_pv_edit" class="text-danger small d-none">El precio de venta no puede ser menor que el precio unitario.</div>
-
-</div>
-
+          <div class="mb-3">
+            <label for="edit_precio_venta" class="form-label">Precio de venta</label>
+            <input type="text" inputmode="decimal" id="edit_precio_venta" name="precio_venta" class="form-control" placeholder="0,00 o 0.00" required>
+            <small class="text-muted">Solo números y hasta 2 decimales.</small>
+            <div id="err_pv_edit" class="text-danger small d-none">El precio de venta no puede ser menor que el precio unitario.</div>
+          </div>
 
           <div class="mb-3">
             <label for="edit_stock" class="form-label">Existencias</label>
             <input type="number" min="0" id="edit_stock" name="stock" class="form-control" required>
           </div>
-
 
           <div class="mb-3">
             <label for="edit_idmarca" class="form-label">Marca</label>
@@ -83,9 +97,7 @@
   function formatMoney(raw) {
     let s = (raw || '').toString().replace(/[^0-9.,]/g, '');
     const i = s.search(/[.,]/);
-    if (i === -1) {
-      return s.replace(/[.,]/g,'').replace(/^0+(?=\d)/,'');
-    }
+    if (i === -1) return s.replace(/[.,]/g,'').replace(/^0+(?=\d)/,'');
     const sep = s[i];
     const ent = s.slice(0, i).replace(/[.,]/g,'').replace(/^0+(?=\d)/,'');
     const dec = s.slice(i + 1).replace(/[.,]/g,'').slice(0, 2);
@@ -108,8 +120,17 @@
       inp.value = v.replace(',', '.'); // coma -> punto
     });
   });
+
+  // 👇 NUEVO: preview inmediata al elegir archivo
+  document.getElementById('edit_imagen')?.addEventListener('change', (e) => {
+    const [file] = e.target.files || [];
+    if (!file) return;
+    const img = document.getElementById('edit_preview_img');
+    if (img) img.src = URL.createObjectURL(file);
+  });
 })();
 </script>
+
 <script>
 // === Validar que el precio de venta no sea menor que el precio (Editar) ===
 document.addEventListener('DOMContentLoaded', () => {
@@ -158,6 +179,5 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
-
 
 </div>

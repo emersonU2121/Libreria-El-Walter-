@@ -1,8 +1,39 @@
 @extends('menu')
 
 @section('contenido')
-<div class="card shadow p-4 w-100">
+
+<div class="card shadow mt-5 pt-3"> 
   <h2 class="mb-4 text-center">Lista de Productos</h2>
+
+   <div class="card-body">
+        <form action="{{ route('productos.mostrar') }}" method="GET" class="row g-3 align-items-center">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <input type="text" 
+                           name="buscar" 
+                           class="form-control" 
+                           placeholder="Buscar productos por nombre..." 
+                           value="{{ request('buscar') }}"
+                           aria-label="Buscar productos">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                @if(request('buscar'))
+                    <div class="d-flex align-items-center">
+                        <span class="text-muted me-2">
+                            Resultados para: "{{ request('buscar') }}"
+                        </span>
+                        <a href="{{ route('productos.mostrar') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-times"></i> Limpiar
+                        </a>
+                    </div>
+                @endif
+            </div>
+        </form>
+    </div>
 
   @if(session('warn_low'))  <div class="alert alert-warning">{{ session('warn_low') }}</div> @endif
   @if(session('warn_zero')) <div class="alert alert-danger">{{ session('warn_zero') }}</div> @endif
@@ -31,6 +62,7 @@
       <table class="table table-bordered table-striped text-center align-middle">
         <thead class="table-dark">
           <tr>
+            <th>Identificador</th>
             <th>Nombre</th>
             <th>Precio unitario</th>
             <th>Precio de venta</th> {{-- << agregado --}}
@@ -59,6 +91,7 @@
             $esBajo   = $stockVal > 0 && $stockVal <= $umbral;
           @endphp
           <tr class="{{ $esBajo ? 'table-warning' : '' }}">
+            <td>{{ $p->idproducto }}</td>
             <td>{{ $p->nombre }}</td>
             <td>${{ number_format($p->precio,2) }}</td>
             <td>${{ number_format($p->precio_venta,2) }}</td> {{-- << agregado --}}

@@ -10,14 +10,14 @@
     height:100vh;
     display:flex;
     align-items:top;
-    justify-content:top;
+    justify-content:center;
     text-align:center;
     color:#fff;
     padding:2rem;
     flex-direction:column;
   }
 
-  /* 🔥 Ajuste del tamaño de letras */
+  /* Ajuste del tamaño de letras */
   .main-hero h1 {
     font-weight: 700;
     font-size: clamp(3rem, 6vw, 5rem); /* crece en pantallas grandes */
@@ -34,14 +34,22 @@
   /* Footer fijo (de tu layout o global) */
   footer, .footer, #footer, .site-footer {
     position: fixed !important;
-    left: 0; right: 0; bottom: 0;
-    z-index: 5;
-    background: rgba(255,255,255,0.92);
+    left: 0; 
+    right: 0; 
+    bottom: 0;
+    z-index: 1000;
+    
+    backdrop-filter: blur(3.5px);
+    -webkit-backdrop-filter: blur(3.5px);
+    
     color: #000;
     padding: 0.8rem 1rem;
     text-align: center;
-    backdrop-filter: blur(4px);
+
+    
+    margin: 0;
   }
+  
 </style>
 
 <div class="page-bg">

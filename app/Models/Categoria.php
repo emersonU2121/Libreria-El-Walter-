@@ -17,4 +17,9 @@ class Categoria extends Model
     public function scopeBuscar($q, $term) {
         if ($term) $q->where('nombre', 'like', "%{$term}%");
     }
+
+    public function productos()
+{
+    return $this->hasMany(\App\Models\Producto::class, 'idcategoria', 'idcategoria');
+}
 }

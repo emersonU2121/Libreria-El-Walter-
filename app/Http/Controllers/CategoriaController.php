@@ -9,16 +9,19 @@ use Illuminate\Support\Facades\Schema;
 
 class CategoriaController extends Controller
 {
-    public function index(Request $request)
-    {
-        $q = $request->get('q');
-        $categorias = Categoria::buscar($q)
-            ->orderByDesc('idcategoria')
-            ->paginate(10)
-            ->withQueryString();
+    public function index(\Illuminate\Http\Request $request)
+{
+    $q = trim((string) $request->get('q'));
+    $perPage = 10;
 
-        return view('categorias.mostrarC', compact('categorias','q'));
-    }
+    $categorias = \App\Models\Categoria::buscar($q)
+        ->orderBy('nombre')               // o por idcategoria si prefieres
+        ->paginate($perPage)
+        ->withQueryString();              // <- mantiene ?q=... en la paginación
+
+    return view('categorias.mostrarC', compact('categorias', 'q'));
+}
+
 
     public function create()
     {
@@ -50,12 +53,16 @@ class CategoriaController extends Controller
         return back()->with('ok','Acción realizada.');
     }
 
-    public function destroy(Categoria $categoria)
-    {
-        $categoria->delete();
-        return back()->with('ok','Categoría eliminada.');
+   public function destroy(Categoria $categoria)
+{
+    // Pre-chequeo (rápido y claro para el usuario)
+    if ($categoria->productos()->exists()) {
+        return back()->with('error', 'No se puede eliminar la categoría porque tiene productos asociados.');
     }
 
+    $categoria->delete();
+    return back()->with('ok', 'Categoría eliminada.');
+}
     // app/Http/Controllers/CategoriaController.php
 
 public function inactivo(Categoria $categoria) {

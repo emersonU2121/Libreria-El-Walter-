@@ -1,7 +1,7 @@
 @extends('menu')
 
 @section('contenido')
-<div style="margin-right: 20px;"  class="compact-form">
+<div style="margin-right: 20px; "  class="compact-form">
     <h1>Registro de Marcas</h1>
 
     @if(session('ok'))
@@ -43,8 +43,11 @@
 
 
 
-<div style="margin: auto" class="card shadow p-4 w-100">
+<div style="margin: auto" class="card shadow mt-5 p-4 w-100">
+
+
   <h2 class="mb-4 text-center">Lista de Marcas</h2>
+
 
   <div class="card-body">
         <form action="{{ route('marcas.mostrar') }}" method="GET" class="row g-3 align-items-center">
@@ -76,6 +79,7 @@
         </form>
     </div>
 
+    
   @if($marcas->isEmpty())
     <div class="alert alert-warning text-center">No hay marcas registradas.</div>
   @else

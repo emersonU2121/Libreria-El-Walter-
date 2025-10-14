@@ -12,10 +12,10 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-transparent px-3">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-transparent fixed-top px-3">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center" href="{{ route('inicio') }}">
-                <img src="{{ asset('images/W.png') }}" alt="Logo" width="40" height="40" class="me-2">
+                <img src="{{ asset('images/W.png') }}" alt="Logo" width="30" height="30" class="me-2">
                 Librería "El Walter"
             </a>
 
@@ -178,7 +178,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-<footer class="text-center mt-5 py-3 bg-light">
+<footer class="text-center mt-5 py-3 footer-transparent">
     <p>&copy; {{ date('Y') }} Universidad Nacional de El Salvador. Todos los derechos reservados.</p>
 </footer>
 

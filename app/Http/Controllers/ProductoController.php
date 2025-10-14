@@ -23,8 +23,10 @@ class ProductoController extends Controller
     // ============================
     //  Muestra listado
     // ============================
-   public function mostrar()
+   public function mostrar(Request $request)
 {
+     $buscar = $request->get('buscar');
+
     $productos = \DB::table('producto as p')
         ->leftJoin('marca as m', 'm.idmarca', '=', 'p.idmarca')
         ->leftJoin('categoria as c', 'c.idcategoria', '=', 'p.idcategoria')
@@ -33,10 +35,21 @@ class ProductoController extends Controller
             'm.nombre as marca_nombre',
             'c.nombre as categoria_nombre'
         )
+        ->when($buscar, function($query, $buscar) {
+            return $query->where('p.nombre', 'like', "%{$buscar}%")
+                        ->orWhere('m.nombre', 'like', "%{$buscar}%")
+                        ->orWhere('c.nombre', 'like', "%{$buscar}%")
+                        ->orWhere('p.idproducto', 'like', "%{$buscar}%")
+                        ->orWhere('p.precio', 'like', "%{$buscar}%")
+                        ->orWhere('p.precio_venta', 'like', "%{$buscar}%")
+                        ->orWhere('p.stock', 'like', "%{$buscar}%");
+        })
         ->orderBy('p.idproducto', 'asc')
         ->get();
 
-    return view('producto.mostrarProducto', compact('productos'));
+    return view('producto.mostrarProducto', compact('productos', 'buscar'));
+
+
 }
 
 

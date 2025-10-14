@@ -46,28 +46,38 @@ class ProductoController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'idproducto'  => ['required','regex:/^(?!0+$)\d{1,20}$/','unique:producto,idproducto'],
-            'nombre'      => 'required|string|max:255|unique:producto,nombre',
-            'precio'      => ['required','regex:/^\d{1,9}([.,]\d{1,2})?$/'],
-            'stock'       => 'required|integer|min:0',
-            'idmarca'     => 'required|integer|exists:marca,idmarca',
-            'idcategoria' => 'required|integer|exists:categoria,idcategoria',
+            'idproducto'   => ['required','regex:/^(?!0+$)\d{1,20}$/','unique:producto,idproducto'],
+            'nombre'       => 'required|string|max:255|unique:producto,nombre',
+            'precio'       => ['required','regex:/^\d{1,9}([.,]\d{1,2})?$/'],
+            'precio_venta' => ['required','regex:/^\d{1,9}([.,]\d{1,2})?$/'], // << agregado
+            'stock'        => 'required|integer|min:0',
+            'idmarca'      => 'required|integer|exists:marca,idmarca',
+            'idcategoria'  => 'required|integer|exists:categoria,idcategoria',
         ],[
-            'idproducto.regex'  => 'El ID debe tener 1–20 dígitos y no iniciar en 0.',
-            'idproducto.unique' => 'El ID de producto ya existe.',
-            'precio.regex'      => 'El precio debe tener solo números y hasta 2 decimales.',
+            'idproducto.regex'     => 'El ID debe tener 1–20 dígitos y no iniciar en 0.',
+            'idproducto.unique'    => 'El ID de producto ya existe.',
+            'precio.regex'         => 'El precio debe tener solo números y hasta 2 decimales.',
+            'precio_venta.regex'   => 'El precio de venta debe tener solo números y hasta 2 decimales.',
         ]);
 
-        $precio = number_format((float)str_replace(',', '.', $validated['precio']), 2, '.', '');
+        $precio       = number_format((float)str_replace(',', '.', $validated['precio']), 2, '.', '');
+        $precioVenta  = number_format((float)str_replace(',', '.', $validated['precio_venta']), 2, '.', '');
+
+        if ((float)$precioVenta < (float)$precio) {
+    return back()
+        ->withErrors(['precio_venta' => 'El precio de venta no puede ser menor que el precio unitario.'])
+        ->withInput();
+}
 
         $p = new Producto();
-        $p->idproducto  = (string)$validated['idproducto'];
-        $p->nombre      = $validated['nombre'];
-        $p->precio      = $precio;
-        $p->stock       = (int)$validated['stock'];
-        $p->idmarca     = (int)$validated['idmarca'];
-        $p->idcategoria = (int)$validated['idcategoria'];
-        $p->estado      = $p->stock > 0 ? 'disponible' : 'agotado';
+        $p->idproducto   = (string)$validated['idproducto'];
+        $p->nombre       = $validated['nombre'];
+        $p->precio       = $precio;
+        $p->precio_venta = $precioVenta; // << agregado
+        $p->stock        = (int)$validated['stock'];
+        $p->idmarca      = (int)$validated['idmarca'];
+        $p->idcategoria  = (int)$validated['idcategoria'];
+        $p->estado       = $p->stock > 0 ? 'disponible' : 'agotado';
         $p->save();
 
         return redirect()->route('productos.mostrar')->with('ok','Producto creado exitosamente');
@@ -77,38 +87,57 @@ class ProductoController extends Controller
     //  Editar producto
     // ============================
     public function update(Request $request, $id)
-    {
-        $p = Producto::find($id);
-        if (!$p) {
-            return redirect()->route('productos.mostrar')->with('error','Producto no encontrado');
-        }
-
-        $validated = $request->validate([
-            'nombre'      => ['sometimes','string','max:255','unique:producto,nombre,'.$id.',idproducto'],
-            'precio'      => ['sometimes','regex:/^\d{1,9}([.,]\d{1,2})?$/'],
-            'stock'       => ['sometimes','integer','min:0'],
-            'idmarca'     => ['sometimes','integer','exists:marca,idmarca'],
-            'idcategoria' => ['sometimes','integer','exists:categoria,idcategoria'],
-        ],[
-            'nombre.unique' => 'El nombre de producto ya ha sido registrado.',
-            'precio.regex'  => 'El precio debe tener solo números y hasta 2 decimales (coma o punto).',
-        ]);
-
-        if (array_key_exists('precio', $validated)) {
-            $validated['precio'] = number_format(
-                (float)str_replace(',', '.', $validated['precio']),
-                2, '.', ''
-            );
-        }
-
-        if (array_key_exists('stock', $validated)) {
-            $validated['estado'] = ((int)$validated['stock'] > 0) ? 'disponible' : 'agotado';
-        }
-
-        $p->fill($validated)->save();
-
-        return redirect()->route('productos.mostrar')->with('ok','Producto actualizado correctamente');
+{
+    $p = \App\Models\Producto::find($id);
+    if (!$p) {
+        return redirect()->route('productos.mostrar')->with('error','Producto no encontrado');
     }
+
+    // === Validaciones iguales a Registrar para precio y precio_venta ===
+    $validated = $request->validate([
+        'nombre'        => ['sometimes','string','max:255','unique:producto,nombre,'.$id.',idproducto'],
+        'precio'        => ['sometimes','regex:/^\d{1,9}([.,]\d{1,2})?$/'],         // igual que store
+        'precio_venta'  => ['sometimes','regex:/^\d{1,9}([.,]\d{1,2})?$/'],         // igual que store
+        'stock'         => ['sometimes','integer','min:0'],
+        'idmarca'       => ['sometimes','integer','exists:marca,idmarca'],
+        'idcategoria'   => ['sometimes','integer','exists:categoria,idcategoria'],
+    ],[
+        'nombre.unique'       => 'El nombre de producto ya ha sido registrado.',
+        'precio.regex'        => 'El precio debe tener solo números y hasta 2 decimales (coma o punto).',
+        'precio_venta.regex'  => 'El precio de venta debe tener solo números y hasta 2 decimales (coma o punto).',
+    ]);
+
+    // === Normalización igual a Registrar (coma -> punto, 2 decimales) ===
+    if (array_key_exists('precio', $validated)) {
+        $validated['precio'] = number_format(
+            (float)str_replace(',', '.', $validated['precio']), 2, '.', ''
+        );
+    }
+    if (array_key_exists('precio_venta', $validated)) {
+        $validated['precio_venta'] = number_format(
+            (float)str_replace(',', '.', $validated['precio_venta']), 2, '.', ''
+        );
+    }
+
+    // Estado depende de stock (como ya lo tienes)
+    if (array_key_exists('stock', $validated)) {
+        $validated['estado'] = ((int)$validated['stock'] > 0) ? 'disponible' : 'agotado';
+    }
+
+    $precioEfectivo = array_key_exists('precio', $validated) ? (float)$validated['precio'] : (float)$p->precio;
+$pvEfectivo     = array_key_exists('precio_venta', $validated) ? (float)$validated['precio_venta'] : (float)$p->precio_venta;
+
+if ($pvEfectivo < $precioEfectivo) {
+    return back()
+        ->withErrors(['precio_venta' => 'El precio de venta no puede ser menor que el precio.'])
+        ->withInput();
+}
+
+    $p->fill($validated)->save();
+
+    return redirect()->route('productos.mostrar')->with('ok','Producto actualizado correctamente');
+}
+
 
     // ============================
     //  Marcar producto inactivo

@@ -13,6 +13,13 @@ class Producto extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'idproducto','nombre','precio','stock','estado','idmarca','idcategoria',
+        'idproducto',
+        'nombre',
+        'precio',
+        'precio_venta',   // 👈 agregado
+        'stock',
+        'estado',
+        'idmarca',
+        'idcategoria',
     ];
 }

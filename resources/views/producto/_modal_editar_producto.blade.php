@@ -27,23 +27,26 @@
             <input type="text" id="edit_nombre" name="nombre" class="form-control" required>
           </div>
 
-          <div class="mb-3">
-            <label for="edit_precio" class="form-label">Precio</label>
-            <input type="number" step="0.01" min="0" id="edit_precio" name="precio" class="form-control" required>
-          </div>
+         <div class="mb-3">
+  <label for="edit_precio" class="form-label">Precio unitario</label>
+  <input type="text" inputmode="decimal" id="edit_precio" name="precio" class="form-control" placeholder="0,00 o 0.00" required>
+  <small class="text-muted">Solo números y hasta 2 decimales.</small>
+</div>
+
+<div class="mb-3">
+  <label for="edit_precio_venta" class="form-label">Precio de venta</label>
+  <input type="text" inputmode="decimal" id="edit_precio_venta" name="precio_venta" class="form-control" placeholder="0,00 o 0.00" required>
+  <small class="text-muted">Solo números y hasta 2 decimales.</small>
+  <div id="err_pv_edit" class="text-danger small d-none">El precio de venta no puede ser menor que el precio unitario.</div>
+
+</div>
+
 
           <div class="mb-3">
-            <label for="edit_stock" class="form-label">Stock</label>
+            <label for="edit_stock" class="form-label">Existencias</label>
             <input type="number" min="0" id="edit_stock" name="stock" class="form-control" required>
           </div>
 
-          <div class="mb-3">
-            <label for="edit_estado" class="form-label">Estado</label>
-            <select id="edit_estado" name="estado" class="form-select">
-              <option value="disponible">disponible</option>
-              <option value="agotado">agotado</option>
-            </select>
-          </div>
 
           <div class="mb-3">
             <label for="edit_idmarca" class="form-label">Marca</label>
@@ -71,4 +74,90 @@
       </form>
     </div>
   </div>
+
+  <script>
+(() => {
+  const p  = document.getElementById('edit_precio');
+  const pv = document.getElementById('edit_precio_venta');
+
+  function formatMoney(raw) {
+    let s = (raw || '').toString().replace(/[^0-9.,]/g, '');
+    const i = s.search(/[.,]/);
+    if (i === -1) {
+      return s.replace(/[.,]/g,'').replace(/^0+(?=\d)/,'');
+    }
+    const sep = s[i];
+    const ent = s.slice(0, i).replace(/[.,]/g,'').replace(/^0+(?=\d)/,'');
+    const dec = s.slice(i + 1).replace(/[.,]/g,'').slice(0, 2);
+    const entFinal = ent.length ? ent : '0';
+    return dec.length ? (entFinal + sep + dec) : (entFinal + sep);
+  }
+
+  [p, pv].forEach(inp => {
+    inp?.addEventListener('input', () => {
+      inp.value = formatMoney(inp.value);
+    });
+  });
+
+  const formEdit = document.getElementById('formEditarProducto');
+  formEdit?.addEventListener('submit', () => {
+    [p, pv].forEach(inp => {
+      if (!inp) return;
+      let v = (inp.value || '').trim();
+      if (/[.,]$/.test(v)) v = v.slice(0, -1);
+      inp.value = v.replace(',', '.'); // coma -> punto
+    });
+  });
+})();
+</script>
+<script>
+// === Validar que el precio de venta no sea menor que el precio (Editar) ===
+document.addEventListener('DOMContentLoaded', () => {
+  const formEdit = document.getElementById('formEditarProducto');
+  if (!formEdit) return;
+
+  const p = document.getElementById('edit_precio');
+  const pv = document.getElementById('edit_precio_venta');
+
+  // Crear mensaje de error dinámico si no existe
+  let err = document.getElementById('err_pv_edit');
+  if (!err) {
+    err = document.createElement('div');
+    err.id = 'err_pv_edit';
+    err.className = 'text-danger small d-none';
+    err.textContent = 'El precio de venta no puede ser menor que el precio.';
+    pv.parentElement.appendChild(err);
+  }
+
+  formEdit.addEventListener('submit', (e) => {
+    let vP = (p.value || '').trim();
+    let vPV = (pv.value || '').trim();
+
+    // Normaliza coma -> punto
+    if (/[.,]$/.test(vP)) vP = vP.slice(0, -1);
+    if (/[.,]$/.test(vPV)) vPV = vPV.slice(0, -1);
+    vP = vP.replace(',', '.');
+    vPV = vPV.replace(',', '.');
+
+    const nP = parseFloat(vP) || 0;
+    const nPV = parseFloat(vPV) || 0;
+
+    if (nPV < nP) {
+      e.preventDefault();
+      pv.classList.add('is-invalid');
+      err.classList.remove('d-none');
+      return;
+    } else {
+      pv.classList.remove('is-invalid');
+      err.classList.add('d-none');
+    }
+
+    // reasigna valores normalizados
+    p.value = vP;
+    pv.value = vPV;
+  });
+});
+</script>
+
+
 </div>

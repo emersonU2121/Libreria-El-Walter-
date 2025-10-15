@@ -1,4 +1,4 @@
-@extends('menu')
+@extends('menu')  
 
 @section('contenido')
 
@@ -63,6 +63,8 @@
         <thead class="table-dark">
           <tr>
             <th>Identificador</th>
+            {{-- NUEVO: columna de imagen antes del nombre --}}
+            <th>Imagen</th>
             <th>Nombre</th>
             <th>Precio unitario</th>
             <th>Precio de venta</th> {{-- << agregado --}}
@@ -76,25 +78,27 @@
         <tbody>
         @foreach($productos as $p)
           @php
-            $estadoBD = $p->estado ?? 'disponible';   // 'disponible' | 'agotado'
+            $estadoBD = $p->estado ?? 'disponible';
             $stockVal = (int)($p->stock ?? 0);
-
-            // Visual:
-            // - stock == 0 -> agotado (amarillo)
-            // - estadoBD == 'agotado' y stock > 0 -> inactivo (gris)
-            // - estadoBD == 'disponible' -> disponible (verde)
             $estadoVisual = 'disponible';
-            if ($stockVal === 0)        $estadoVisual = 'agotado';
+            if ($stockVal === 0)            $estadoVisual = 'agotado';
             elseif ($estadoBD === 'agotado') $estadoVisual = 'inactivo';
-
-            $esActivo = ($estadoBD === 'disponible'); // solo activos se pueden editar
+            $esActivo = ($estadoBD === 'disponible');
             $esBajo   = $stockVal > 0 && $stockVal <= $umbral;
+            $src = $p->imagen ? asset('storage/'.$p->imagen) : asset('images/no-image.png');
           @endphp
           <tr class="{{ $esBajo ? 'table-warning' : '' }}">
             <td>{{ $p->idproducto }}</td>
+
+            {{-- miniatura --}}
+            <td>
+              <img src="{{ $src }}" alt="img {{ $p->nombre }}"
+                   style="height:50px;width:auto;border:1px solid #eee;padding:2px;border-radius:4px;">
+            </td>
+
             <td>{{ $p->nombre }}</td>
             <td>${{ number_format($p->precio,2) }}</td>
-            <td>${{ number_format($p->precio_venta,2) }}</td> {{-- << agregado --}}
+            <td>${{ number_format($p->precio_venta,2) }}</td>
             <td>
               {{ $p->stock }}
               @if($stockVal === 0)
@@ -113,40 +117,43 @@
               @endif
             </td>
             <td>{{ $p->marca_nombre ?? '—' }}</td>
-<td>{{ $p->categoria_nombre ?? '—' }}</td>
+            <td>{{ $p->categoria_nombre ?? '—' }}</td>
 
-            <td class="d-flex gap-2 justify-content-center">
+            {{-- 👇 cambio estético: quitar d-flex del <td> y moverlo a un contenedor interno --}}
+            <td class="actions-cell">
+              <div class="d-flex gap-2 justify-content-center">
+                {{-- Editar --}}
+                <button type="button"
+                  class="btn btn-sm btn-primary btn-open-edit"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalEditarProducto"
+                  data-idproducto="{{ $p->idproducto }}"
+                  data-nombre="{{ $p->nombre }}"
+                  data-precio="{{ $p->precio }}"
+                  data-precio_venta="{{ $p->precio_venta }}"
+                  data-stock="{{ $p->stock }}"
+                  data-estado="{{ $p->estado }}"
+                  data-idmarca="{{ $p->idmarca }}"
+                  data-idcategoria="{{ $p->idcategoria }}"
+                  data-imagen="{{ $p->imagen }}"
+                  data-update-url="{{ route('productos.update', $p->idproducto) }}"
+                  {{ $esActivo ? '' : 'disabled' }}
+                  title="{{ $esActivo ? 'Editar' : 'Producto inactivo: reactívalo para editar' }}"
+                >Editar</button>
 
-              {{-- Editar: deshabilitado si está inactivo --}}
-              <button type="button"
-                class="btn btn-sm btn-primary btn-open-edit"
-                data-bs-toggle="modal"
-                data-bs-target="#modalEditarProducto"
-                data-idproducto="{{ $p->idproducto }}"
-                data-nombre="{{ $p->nombre }}"
-                data-precio="{{ $p->precio }}"
-                data-precio_venta="{{ $p->precio_venta }}" {{-- << agregado --}}
-                data-stock="{{ $p->stock }}"
-                data-estado="{{ $p->estado }}"
-                data-idmarca="{{ $p->idmarca }}"
-                data-idcategoria="{{ $p->idcategoria }}"
-                data-update-url="{{ route('productos.update', $p->idproducto) }}"
-                {{ $esActivo ? '' : 'disabled' }}
-                title="{{ $esActivo ? 'Editar' : 'Producto inactivo: reactívalo para editar' }}"
-              >Editar</button>
-
-              {{-- Dar de baja / Reactivar --}}
-              <button type="button"
-                class="btn btn-sm {{ $esActivo ? 'btn-warning' : 'btn-success' }} btn-open-baja"
-                data-bs-toggle="modal"
-                data-bs-target="#modalBajaProducto"
-                data-idproducto="{{ $p->idproducto }}"
-                data-nombre="{{ $p->nombre }}"
-                data-estado-bd="{{ $estadoBD }}"
-                data-activo="{{ $esActivo ? 1 : 0 }}"
-                data-inactivar-url="{{ route('productos.inactivo', $p->idproducto) }}"
-                data-activar-url="{{ route('productos.activo', $p->idproducto) }}"
-              >{{ $esActivo ? 'Dar de baja' : 'Reactivar' }}</button>
+                {{-- Dar de baja / Reactivar --}}
+                <button type="button"
+                  class="btn btn-sm {{ $esActivo ? 'btn-warning' : 'btn-success' }} btn-open-baja"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalBajaProducto"
+                  data-idproducto="{{ $p->idproducto }}"
+                  data-nombre="{{ $p->nombre }}"
+                  data-estado-bd="{{ $estadoBD }}"
+                  data-activo="{{ $esActivo ? 1 : 0 }}"
+                  data-inactivar-url="{{ route('productos.inactivo', $p->idproducto) }}"
+                  data-activar-url="{{ route('productos.activo', $p->idproducto) }}"
+                >{{ $esActivo ? 'Dar de baja' : 'Reactivar' }}</button>
+              </div>
             </td>
           </tr>
         @endforeach
@@ -159,30 +166,44 @@
 @include('producto._modal_editar_producto')
 @include('producto._modal_baja_producto')
 
+{{-- 👇 CSS mínimo para que el <td> herede el color de la fila y no se vea el corte --}}
+<style>
+.table tr[class*="table-"] > td,
+.table tr[class*="table-"] > th {
+  background-color: inherit !important;
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // EDITAR: precarga datos y fija action
+  const BASE_STORAGE = "{{ asset('storage') }}";
+  const NO_IMAGE     = "{{ asset('images/no-image.png') }}";
+
   document.querySelectorAll('.btn-open-edit').forEach(btn => {
     btn.addEventListener('click', () => {
       const f = document.getElementById('formEditarProducto');
       if (f) f.action = btn.dataset.updateUrl || '#';
 
-      ['idproducto','nombre','precio','precio_venta','stock','idmarca','idcategoria'].forEach(k => { // << agregado precio_venta
+      ['idproducto','nombre','precio','precio_venta','stock','idmarca','idcategoria'].forEach(k => {
         const el = document.getElementById('edit_'+k);
         if (el) el.value = btn.dataset[k] ?? '';
       });
 
-      // Estado visual en modal según stock
+      const prev = document.getElementById('edit_preview_img');
+      if (prev) {
+        const rel = btn.dataset.imagen || '';
+        prev.src = rel ? (BASE_STORAGE + '/' + rel) : NO_IMAGE;
+      }
+
       const s = document.getElementById('edit_stock');
       const estView = document.getElementById('edit_estado_view');
       const hint = document.getElementById('edit_low_hint');
-      const n = parseInt(s.value || '0', 10);
+      const n = parseInt(s?.value || '0', 10);
       if (estView) estView.value = (n > 0) ? 'disponible' : 'agotado';
       if (hint) { if (n > 0 && n <= 5) hint.classList.remove('d-none'); else hint.classList.add('d-none'); }
     });
   });
 
-  // BAJA / REACTIVAR: fija action y textos
   document.querySelectorAll('.btn-open-baja').forEach(btn => {
     btn.addEventListener('click', () => {
       const esActivo = btn.dataset.activo === '1';
@@ -207,7 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Salvaguarda: evita submit sin action
   ['formEditarProducto','formBajaProducto'].forEach(id => {
     const f = document.getElementById(id);
     if (!f) return;
@@ -219,6 +239,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
-
 </script>
 @endsection

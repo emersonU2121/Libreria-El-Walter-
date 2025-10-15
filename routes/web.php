@@ -5,11 +5,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Usuario;
 use App\Models\marca;
+
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\inicioController;
 
 
 // ====== Principal ======
@@ -20,10 +22,8 @@ Route::get('/', function () {
     return view('auth.login');
 })->name('login');
 
-
-Route::get('/inicio', function () {
-    return view('inicio');
-})->name('inicio');
+// RUTA CORREGIDA - usa el controlador
+Route::get('/inicio', [inicioController::class, 'index'])->name('inicio');
 
 // ====== USUARIOS ======
 
@@ -124,4 +124,6 @@ Route::prefix('categorias')->name('categorias.')->group(function () {
     Route::post('/validar-nombre', [CategoriaController::class,'validarNombre'])->name('validar-nombre');
 
     Route::delete('/{categoria}', [CategoriaController::class,'destroy'])->name('destroy');
+
 });
+

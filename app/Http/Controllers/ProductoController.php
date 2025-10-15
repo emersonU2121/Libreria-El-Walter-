@@ -177,6 +177,16 @@ class ProductoController extends Controller
     return redirect()->route('productos.mostrar')->with('ok','Producto actualizado correctamente');
 }
 
+public function inactivo($id)
+    {
+        $p = Producto::find($id);
+        if (!$p) return back()->with('error','Producto no encontrado');
+
+        $p->estado = 'agotado';
+        $p->save();
+
+        return back()->with('ok','Producto dado de baja (agotado)');
+    }
 
     // ============================
     //  Reactivar producto

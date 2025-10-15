@@ -16,7 +16,6 @@
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center" href="{{ route('inicio') }}">
                 <img src="{{ asset('images/W.png') }}" alt="Logo" width="30" height="30" class="me-2">
-                Librería "El Walter"
             </a>
 
 
@@ -61,7 +60,6 @@
                             Marcas
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('marcas.registrar') }}">Registrar Marca</a></li>
                             <li><a class="dropdown-item" href="{{ route('marcas.mostrar') }}">Mostrar Marca</a></li>
                         </ul>
                     </div>
@@ -76,11 +74,7 @@
                             Categoría
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="dropdownCategorias">
-                            <li>
-                                <a class="dropdown-item" href="{{ route('categorias.registrarC') }}">
-                                    Registrar Categoría
-                                </a>
-                            </li>
+                            
                             <li>
                                 <a class="dropdown-item" href="{{ route('categorias.mostrarC') }}">
                                     Mostrar Categorías

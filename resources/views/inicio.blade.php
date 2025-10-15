@@ -278,7 +278,7 @@
         </span>
         <p class="title-text">Stock Bajo</p>
         <p class="percent" style="color: #d97706;">
-          {{ $productosStockBajo->count() }}
+          {{ $porcentajeStockBajo }}%
         </p>
       </div>
       <div class="data">

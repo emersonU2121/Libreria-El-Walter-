@@ -11,29 +11,41 @@ class MarcaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        $marcas = marca::all();
+    public function index(Request $request)
+{
+    // Soporta ?buscar=... y ?perPage=...
+    $buscar  = $request->get('buscar');
+    $perPage = (int) $request->get('perPage', 10);
+    if ($perPage <= 0) $perPage = 15;
 
-        if($marcas->empty())
-        {
-           return response()->json(['message'=> 'No se encontraron Marcas']);
-        }
+    $marcas = Marca::when($buscar, fn ($q, $b) =>
+                    $q->where('nombre', 'like', "%{$b}%"))
+                ->orderBy('nombre')
+                ->paginate($perPage)          
+                ->withQueryString();          
 
-        return response()->json($marcas, 200);
+    if ($marcas->total() === 0) {
+        return response()->json(['message' => 'No se encontraron Marcas'], 200);
     }
 
-    public function mostrar(Request $request)
-{
-   /** $marcas = marca::all();
-    *return view('marcas.mostrar_marca', compact('marcas')); 
-    */
-    $buscar = $request->get('buscar');
+    return response()->json($marcas, 200);
 
-    $marcas = marca::when($buscar, function($query, $buscar){
-        return $query->where('nombre', 'like', "%{$buscar}%");
-    })->get();
-    
+    // Si prefieres solo Prev/Siguiente:
+    // ->simplePaginate($perPage)->withQueryString();
+}
+
+public function mostrar(Request $request)
+{
+    $buscar  = $request->get('buscar');
+    $perPage = (int) $request->get('perPage', 10);
+    if ($perPage <= 0) $perPage = 10;
+
+    $marcas = Marca::when($buscar, fn ($q, $b) =>
+                    $q->where('nombre', 'like', "%{$b}%"))
+                ->orderBy('nombre')
+                ->paginate($perPage)          
+                ->withQueryString();          
+
     return view('marcas.mostrar_marca', compact('marcas', 'buscar'));
 }
 

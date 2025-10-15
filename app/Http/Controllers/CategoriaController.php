@@ -12,7 +12,7 @@ class CategoriaController extends Controller
     public function index(\Illuminate\Http\Request $request)
 {
     $q = trim((string) $request->get('q'));
-    $perPage = 10;
+    $perPage = 15;
 
     $categorias = \App\Models\Categoria::buscar($q)
         ->orderBy('nombre')               // o por idcategoria si prefieres

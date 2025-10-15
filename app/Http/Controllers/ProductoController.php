@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage; // 👈 AÑADE ESTO
+use Illuminate\Support\Facades\DB;
 
 use App\Models\Producto;
 
@@ -27,7 +28,8 @@ class ProductoController extends Controller
     // ============================
    public function mostrar(Request $request)
 {
-     $buscar = $request->get('buscar');
+    $buscar  = $request->get('buscar');
+    $perPage = (int) $request->get('perPage', 15);
 
     $productos = \DB::table('producto as p')
         ->leftJoin('marca as m', 'm.idmarca', '=', 'p.idmarca')
@@ -37,22 +39,24 @@ class ProductoController extends Controller
             'm.nombre as marca_nombre',
             'c.nombre as categoria_nombre'
         )
-        ->when($buscar, function($query, $buscar) {
-            return $query->where('p.nombre', 'like', "%{$buscar}%")
-                        ->orWhere('m.nombre', 'like', "%{$buscar}%")
-                        ->orWhere('c.nombre', 'like', "%{$buscar}%")
-                        ->orWhere('p.idproducto', 'like', "%{$buscar}%")
-                        ->orWhere('p.precio', 'like', "%{$buscar}%")
-                        ->orWhere('p.precio_venta', 'like', "%{$buscar}%")
-                        ->orWhere('p.stock', 'like', "%{$buscar}%");
+        // AGRUPA las condiciones de búsqueda para que apliquen como un bloque
+        ->when($buscar, function ($q) use ($buscar) {
+            $q->where(function ($qq) use ($buscar) {
+                $qq->where('p.nombre', 'like', "%{$buscar}%")
+                   ->orWhere('m.nombre', 'like', "%{$buscar}%")
+                   ->orWhere('c.nombre', 'like', "%{$buscar}%")
+                   ->orWhere('p.idproducto', 'like', "%{$buscar}%")
+                   ->orWhere('p.precio', 'like', "%{$buscar}%")
+                   ->orWhere('p.precio_venta', 'like', "%{$buscar}%")
+                   ->orWhere('p.stock', 'like', "%{$buscar}%");
+            });
         })
         ->orderBy('p.idproducto', 'asc')
-        ->get();
-
+        ->paginate($perPage)
+        ->withQueryString();
     return view('producto.mostrarProducto', compact('productos', 'buscar'));
-
-
 }
+
 
 
     // ============================

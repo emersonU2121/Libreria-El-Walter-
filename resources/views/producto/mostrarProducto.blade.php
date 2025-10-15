@@ -160,6 +160,15 @@
         </tbody>
       </table>
     </div>
+    <div class="d-flex justify-content-between align-items-center mt-3">
+  <div class="text-muted small">
+    Mostrando {{ $productos->firstItem() }}–{{ $productos->lastItem() }} de {{ $productos->total() }}
+  </div>
+  <div>
+    {!! $productos->links('vendor.pagination.prev-next-only') !!}
+  </div>
+</div>
+
   @endif
 </div>
 

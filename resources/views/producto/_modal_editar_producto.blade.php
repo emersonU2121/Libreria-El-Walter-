@@ -45,7 +45,7 @@
           </div>
 
           <div class="mb-3">
-            <label for="edit_precio" class="form-label">Precio unitario</label>
+            <label for="edit_precio" class="form-label">Precio de compra</label>
             <input type="text" inputmode="decimal" id="edit_precio" name="precio" class="form-control" placeholder="0,00 o 0.00" required>
             <small class="text-muted">Solo números y hasta 2 decimales.</small>
           </div>

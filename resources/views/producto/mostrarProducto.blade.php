@@ -66,7 +66,7 @@
             {{-- NUEVO: columna de imagen antes del nombre --}}
             <th>Imagen</th>
             <th>Nombre</th>
-            <th>Precio unitario</th>
+            <th>Precio de compra</th>
             <th>Precio de venta</th> {{-- << agregado --}}
             <th>Existencias</th>
             <th>Estado</th>

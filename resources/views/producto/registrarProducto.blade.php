@@ -102,7 +102,7 @@
 
                 {{-- PRECIO UNITARIO --}}
                 <div class="campo-formulario">
-                    <label for="precio" class="form-label">Precio unitario</label>
+                    <label for="precio" class="form-label">Precio de compra</label>
                     <input type="text" inputmode="decimal" id="precio" name="precio"
                            class="form-control" placeholder="0,00 o 0.00"
                            value="{{ old('precio') }}" required>

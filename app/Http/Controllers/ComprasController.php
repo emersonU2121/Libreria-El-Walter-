@@ -21,60 +21,64 @@ class ComprasController extends Controller
 
     // Procesar la compra 
     public function store(Request $request)
-    {
-        $request->validate([
-            'productos' => 'required|array|min:1',
-            'productos.*.concepto' => 'required|string|max:255',
-            'productos.*.id_producto' => 'required|exists:producto,idproducto',
-            'productos.*.unidades' => 'required|integer|min:1'
-        ]);
+{
+    $request->validate([
+        'concepto_general' => 'required|string|max:255',
+        'productos' => 'required|array|min:1',
+        'productos.*.concepto' => 'required|string|max:255',
+        'productos.*.id_producto' => 'required|exists:producto,idproducto',
+        'productos.*.unidades' => 'required|integer|min:1',
+        'productos.*.precio_compra' => 'required|numeric|min:0.01' // ← NUEVA VALIDACIÓN
+    ]);
 
-        DB::transaction(function () use ($request) {
-            // Obtener el ID del usuario autenticado CORRECTAMENTE
-            $usuario = Auth::user();
-            
-            if (!$usuario) {
-                throw new \Exception('Usuario no autenticado');
+    DB::transaction(function () use ($request) {
+        $usuario = Auth::user();
+        
+        if (!$usuario) {
+            throw new \Exception('Usuario no autenticado');
+        }
+
+        // 1. Crear la compra
+      $compra = Compra::create([
+        'concepto' => $request->concepto_general, 
+         'fecha' => now(),
+         'idusuario' => $usuario->idusuario
+]);
+
+        // 2. Procesar productos
+        foreach ($request->productos as $productoData) {
+            $producto = Producto::find($productoData['id_producto']);
+
+            if (!$producto) {
+                throw new \Exception('Producto no encontrado: ' . $productoData['id_producto']);
             }
 
-            // 1. Crear la compra CON concepto (usando el primer concepto)
-            $primerConcepto = $request->productos[0]['concepto'];
-            
-            $compra = Compra::create([
-                'concepto' => $primerConcepto,
-                'fecha' => now(),
-                'idusuario' => $usuario->idusuario // ← USAR EL ID CORRECTO
+            // USAR EL PRECIO EDITABLE DEL FORMULARIO
+            $precioUnitario = $productoData['precio_compra'];
+            $precioTotal = $precioUnitario * $productoData['unidades'];
+
+            // Crear detalle del producto
+            DetalleCompra::create([
+                'idcompra' => $compra->idcompra,
+                'idproducto' => $productoData['id_producto'],
+                'precio_total' => $precioTotal,
+                'unidades' => $productoData['unidades'],
+                'concepto' => $productoData['concepto']
             ]);
 
-            // 2. Procesar productos (cada uno con su concepto en detalle_compra)
-            foreach ($request->productos as $productoData) {
-                $producto = Producto::find($productoData['id_producto']);
+            // Actualizar stock del producto 
+            $producto->stock += $productoData['unidades'];
+            $producto->precio = $precioUnitario;
 
-                if (!$producto) {
-                    throw new \Exception('Producto no encontrado: ' . $productoData['id_producto']);
-                }
+            //dd($producto->getDirty());//linea de prueba
 
-                // Calcular el precio_total basado en producto.precio
-                $precioTotal = $producto->precio * $productoData['unidades'];
+            $producto->save();
+        }
+    });
 
-                // Crear detalle del producto CON CONCEPTO
-                DetalleCompra::create([
-                    'idcompra' => $compra->idcompra,
-                    'idproducto' => $productoData['id_producto'],
-                    'precio_total' => $precioTotal,
-                    'unidades' => $productoData['unidades'],
-                    'concepto' => $productoData['concepto']
-                ]);
-
-                // 3. Actualizar stock del producto 
-                $producto->stock += $productoData['unidades'];
-                $producto->save();
-            }
-        });
-
-        return redirect()->route('compras.mostrar')
-            ->with('success', 'Compra registrada exitosamente');
-    }
+    return redirect()->route('compras.mostrar')
+        ->with('success', 'Compra registrada exitosamente');
+}
 
     // Mostrar historial de compras
     public function mostrar()

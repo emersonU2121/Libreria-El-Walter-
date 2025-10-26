@@ -56,6 +56,7 @@
                     <thead class="table-light">
                         <tr>
                             <th class="text-dark">Producto</th>
+                            <th class="text-dark">Origen/Concepto</th>
                             <th class="text-dark text-center">Unidades</th>
                             <th class="text-dark text-end">Precio Unitario</th>
                             <th class="text-dark text-end">Precio Total</th>
@@ -67,6 +68,7 @@
                             <td class="text-dark">
                                 <strong>{{ $detalle->producto->nombre ?? 'Producto no encontrado' }}</strong>
                             </td>
+                            <td class="text-dark">{{ $detalle->concepto }}</td>
                             <td class="text-center">
                                 <span class="badge bg-primary">{{ $detalle->unidades }}</span>
                             </td>
@@ -81,7 +83,7 @@
                     </tbody>
                     <tfoot class="table-success">
                         <tr>
-                            <td colspan="3" class="text-end fw-semibold text-dark">Total General:</td>
+                            <td colspan="4" class="text-end fw-semibold text-dark">Total General:</td>
                             <td class="text-end fw-semibold text-dark">${{ number_format($compra->total, 2) }}</td>
                         </tr>
                     </tfoot>

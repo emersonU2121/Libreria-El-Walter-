@@ -18,7 +18,7 @@ class MarcaController extends Controller
     $perPage = (int) $request->get('perPage', 10);
     if ($perPage <= 0) $perPage = 15;
 
-    $marcas = Marca::when($buscar, fn ($q, $b) =>
+    $marcas = marca::when($buscar, fn ($q, $b) =>
                     $q->where('nombre', 'like', "%{$b}%"))
                 ->orderBy('nombre')
                 ->paginate($perPage)          
@@ -40,7 +40,7 @@ public function mostrar(Request $request)
     $perPage = (int) $request->get('perPage', 10);
     if ($perPage <= 0) $perPage = 10;
 
-    $marcas = Marca::when($buscar, fn ($q, $b) =>
+    $marcas = marca::when($buscar, fn ($q, $b) =>
                     $q->where('nombre', 'like', "%{$b}%"))
                 ->orderBy('nombre')
                 ->paginate($perPage)          

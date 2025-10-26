@@ -83,12 +83,12 @@
                         </ul>
                     </div>
 
-                    <a href="#" class="value text-decoration-none">
-                        <svg class="normal" viewBox="0 0 24 24">
-                            <path d="M17 18c-1.11 0-2 .89-2 2a2 2 0 002 2 2 2 0 000-4zM7 18c-1.11 0-2 .89-2 2a2 2 0 002 2 2 2 0 000-4zM7.17 14.75L7.2 14.63 8.1 13h7.45c.75 0 1.41-.41 1.75-1.03l3.86-7.01L19.42 4h-.01l-1.1 2-2.76 5H8.53l-.13-.27L6.16 6l-.95-2-.94-2H1v2h2l3.6 7.59-1.35 2.44c-.73 1.34.23 2.97 1.75 2.97h12v-2H7.42c-.13 0-.25-.11-.25-.25z" fill="currentColor" />
-                        </svg>
-                        Compras
-                    </a>
+                   <a class="value text-decoration-none" href="{{ route('compras.registrar') }}">
+    <svg class="normal" viewBox="0 0 24 24">
+        <path d="M17 18c-1.11 0-2 .89-2 2a2 2 0 002 2 2 2 0 000-4zM7 18c-1.11 0-2 .89-2 2a2 2 0 002 2 2 2 0 000-4zM7.17 14.75L7.2 14.63 8.1 13h7.45c.75 0 1.41-.41 1.75-1.03l3.86-7.01L19.42 4h-.01l-1.1 2-2.76 5H8.53l-.13-.27L6.16 6l-.95-2-.94-2H1v2h2l3.6 7.59-1.35 2.44c-.73 1.34.23 2.97 1.75 2.97h12v-2H7.42c-.13 0-.25-.11-.25-.25z" fill="currentColor" />
+    </svg>
+    Compras
+</a>
 
                     <a href="#" class="value text-decoration-none">
                         <svg class="normal" viewBox="0 0 24 24">

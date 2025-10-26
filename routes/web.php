@@ -12,6 +12,7 @@ use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\inicioController;
+use App\Http\Controllers\ComprasController;
 
 
 // ====== Principal ======
@@ -124,6 +125,13 @@ Route::prefix('categorias')->name('categorias.')->group(function () {
     Route::post('/validar-nombre', [CategoriaController::class,'validarNombre'])->name('validar-nombre');
 
     Route::delete('/{categoria}', [CategoriaController::class,'destroy'])->name('destroy');
-
 });
+
+
+// ====== COMPRAS ======
+Route::get('/compras/registrar', [ComprasController::class, 'create'])->name('compras.registrar');
+Route::post('/compras', [ComprasController::class, 'store'])->name('compras.store');
+Route::get('/compras/mostrar', [ComprasController::class, 'mostrar'])->name('compras.mostrar');
+Route::get('/compras/{id}/detalles', [ComprasController::class, 'detalles'])->name('compras.detalles');
+
 

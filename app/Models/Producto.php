@@ -14,10 +14,10 @@ class Producto extends Model
 
     protected $fillable = [
         'idproducto',
-        'imagen',        // 👈 NUEVO (va después del idproducto en BD)
+        'imagen',      
         'nombre',
         'precio',
-        'precio_venta',   // 👈 agregado
+        'precio_venta',
         'stock',
         'estado',
         'idmarca',

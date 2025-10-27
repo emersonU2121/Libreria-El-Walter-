@@ -115,6 +115,23 @@
                     @endif
                     @endauth
 
+                    @auth
+@if(Auth::user()->rol === 'Administrador')
+<div class="dropdown d-inline-block">
+    <a class="value text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <svg class="normal" viewBox="0 0 24 24" style="width:20px;height:20px;vertical-align:middle;">
+            <path d="M5 4h14a2 2 0 012 2v8a2 2 0 01-2 2h-6l-4 4v-4H5a2 2 0 01-2-2V6a2 2 0 012-2z" fill="currentColor"/>
+        </svg>
+        Sistema
+    </a>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{{ route('backups.index') }}">Respaldos</a></li>
+    </ul>
+</div>
+@endif
+@endauth
+
+
 
                 </div>
 

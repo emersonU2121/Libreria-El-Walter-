@@ -13,6 +13,7 @@ use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\inicioController;
 use App\Http\Controllers\ComprasController;
+use App\Http\Controllers\BackupController;
 
 
 // ====== Principal ======
@@ -134,4 +135,28 @@ Route::post('/compras', [ComprasController::class, 'store'])->name('compras.stor
 Route::get('/compras/mostrar', [ComprasController::class, 'mostrar'])->name('compras.mostrar');
 Route::get('/compras/{id}/detalles', [ComprasController::class, 'detalles'])->name('compras.detalles');
 
+// ====== BACKUP========
 
+// routes/web.php
+Route::middleware(['auth', 'isAdmin'])->group(function () {
+
+    // Página principal de respaldos
+    Route::get('/backups', [BackupController::class, 'index'])
+        ->name('backups.index');
+
+    // Generar un nuevo respaldo (guardar o descargar)
+    Route::post('/backups/generar', [BackupController::class, 'generar'])
+        ->name('backups.generar');
+
+    // Descargar un respaldo existente (.sql)
+    Route::get('/backups/descargar', [BackupController::class, 'descargar'])
+        ->name('backups.descargar');
+
+    // Eliminar un respaldo específico (usado en modal eliminar_backup)
+    Route::post('/backups/eliminar', [BackupController::class, 'destroy'])
+        ->name('backups.destroy');
+
+    // Depurar respaldos antiguos (usado en modal depurar_backup)
+    Route::post('/backups/depurar', [BackupController::class, 'purgeOld'])
+        ->name('backups.purge');
+});

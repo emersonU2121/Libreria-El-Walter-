@@ -9,16 +9,18 @@ use Symfony\Component\HttpFoundation\Response;
 class IsAdmin
 {
     /**
-     * Maneja una solicitud entrante.
+     * Verifica si el usuario autenticado tiene rol de administrador.
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Solo permite acceso si está logueado y su rol es Administrador
-        if (auth()->check() && auth()->user()->rol === 'Administrador') {
-            return $next($request);
+        $user = $request->user();
+
+        // Si no hay usuario autenticado o no es administrador
+        if (!$user || ($user->rol ?? null) !== 'Administrador') {
+            abort(403, 'Acceso denegado. Solo los administradores pueden entrar aquí.');
         }
 
-        // Si no es administrador, mostrar error 403
-        abort(403, 'Acceso no autorizado');
+        // Deja continuar la petición
+        return $next($request);
     }
 }

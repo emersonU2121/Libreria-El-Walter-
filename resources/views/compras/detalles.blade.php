@@ -1,7 +1,7 @@
 @extends('menu')
 
 @section('contenido')
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 mt-5 px-3">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0 text-dark">Detalles de Compra #{{ $compra->idcompra }}</h2>

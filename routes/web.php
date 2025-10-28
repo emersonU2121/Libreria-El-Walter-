@@ -14,6 +14,8 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\inicioController;
 use App\Http\Controllers\ComprasController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\ReporteController;
+
 
 
 // ====== Principal ======
@@ -159,4 +161,13 @@ Route::middleware(['auth', 'isAdmin'])->group(function () {
     // Depurar respaldos antiguos (usado en modal depurar_backup)
     Route::post('/backups/depurar', [BackupController::class, 'purgeOld'])
         ->name('backups.purge');
+});
+
+//Reportes
+Route::prefix('reportes')->group(function () {
+    Route::get('/', [ReporteController::class, 'mostrarReportes'])->name('reportes.mostrar');
+    Route::get('/categorias', [ReporteController::class, 'categoriasReporte'])->name('reportes.categorias');
+    Route::get('/marcas', [ReporteController::class, 'marcasReporte'])->name('reportes.marcas');
+    Route::get('/productos', [ReporteController::class, 'productosReporte'])->name('reportes.productos');
+    Route::get('/usuarios', [ReporteController::class, 'usuariosReporte'])->name('reportes.usuarios');
 });

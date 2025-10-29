@@ -18,13 +18,19 @@
             <form action="{{ route('compras.store') }}" method="POST" id="form-compra">
                 @csrf
                 <div class="mb-3">
-    <label for="concepto_general" class="form-label fw-semibold text-dark">Concepto General de la Compra</label>
-    <input type="text" 
-           name="concepto_general" 
-           id="concepto_general" 
-           class="form-control" 
-           placeholder="Ej: Pedido semanal a proveedor X, Compra de libros para inventario..." 
-           required>
+    <label for="concepto_general" class="form-label fw-semibold text-dark">
+  Concepto General de la Compra
+    </label>
+        <input type="text" 
+            name="concepto_general" 
+            id="concepto_general" 
+            class="form-control" 
+            placeholder="Ej: Pedido semanal a proveedor X, Compra de libros para inventario..." 
+            required
+            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" 
+            title="Solo se permiten letras y espacios"
+            oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')">
+
 </div>
                 
                 <!-- Productos -->
@@ -77,15 +83,17 @@
 
                                     <!-- PRECIO COMPRA EDITABLE -->
                                     <div class="col-md-2">
-                                        <label class="form-label small fw-semibold text-dark">Precio Compra</label>
-                                        <input type="number" name="productos[0][precio_compra]" 
-                                               class="form-control form-control-sm precio-compra-editable" 
-                                               step="0.01" 
-                                               value="0.00"
-                                               placeholder="0.00"
-                                               required>
-                                        
+                                    <label class="form-label small fw-semibold text-dark">Precio Compra</label>
+                                    <input type="number"
+                                            name="productos[0][precio_compra]"
+                                            class="form-control form-control-sm precio-compra-editable"
+                                            step="0.01"
+                                            min="0.00"
+                                            value="0.00"
+                                            placeholder="0.00"
+                                            required>
                                     </div>
+
 
                                     <!-- Precio Unitario (Calculado) -->
                                     <div class="col-md-1">
@@ -126,10 +134,16 @@
                                     </h5>
                                 </div>
                                 <div class="col-md-6 text-end">
-                                    <button type="submit" class="btn btn-success px-4">
-                                        <i class="fas fa-save me-2"></i>Registrar Compra
-                                    </button>
-                                </div>
+                                <div class="d-inline-flex gap-2">
+                                <button type="button" id="btnCancelarCompra" class="btn btn-outline-secondary px-4">
+                                <i class="fas fa-ban me-2"></i>Cancelar Operación
+                                </button>
+
+                                <button type="submit" class="btn btn-success px-4">
+                                <i class="fas fa-save me-2"></i>Registrar Compra
+                                </button>
+                            </div>
+                            </div>
                             </div>
                         </div>
                     </div>
@@ -186,6 +200,28 @@
             </div>
         </div>
     </div>
+</div>
+<!-- Modal Confirmar Cancelación -->
+<div class="modal fade" id="modalConfirmarCancelacion" tabindex="-1" aria-labelledby="modalConfirmarCancelacionLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-sm">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="modalConfirmarCancelacionLabel">
+          <i class="fas fa-exclamation-triangle me-2"></i>Confirmar cancelación
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p class="fw-semibold mb-3 text-dark">
+          ¿Deseas cancelar la operación actual? Todos los campos y productos agregados se eliminarán.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, volver</button>
+          <button type="button" class="btn btn-danger" id="btnConfirmarCancelacion">Sí, cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -355,6 +391,55 @@ function calcularTotal() {
 document.addEventListener('DOMContentLoaded', function() {
     calcularTotal();
 });
+
+// --- BOTÓN: Cancelar Operación (versión con modal bonito) ---
+document.addEventListener('DOMContentLoaded', function () {
+  const btnCancelar = document.getElementById('btnCancelarCompra');
+  const btnConfirmar = document.getElementById('btnConfirmarCancelacion');
+  const modalCancel = new bootstrap.Modal(document.getElementById('modalConfirmarCancelacion'));
+  const form = document.getElementById('form-compra');
+
+  if (!btnCancelar || !btnConfirmar || !form) return;
+
+  // Mostrar el modal al hacer clic en "Cancelar"
+  btnCancelar.addEventListener('click', function () {
+    modalCancel.show();
+  });
+
+  // Confirmar limpieza del formulario
+  btnConfirmar.addEventListener('click', function () {
+    modalCancel.hide(); // Cerrar el modal
+
+    // --- Limpieza total del formulario ---
+    form.reset();
+    productoIndex = 0;
+
+    const container = document.getElementById('productos-container');
+    const firstRow = container.firstElementChild;
+    [...container.querySelectorAll('.producto-item')].slice(1).forEach(el => el.remove());
+
+    if (firstRow) {
+      firstRow.querySelectorAll('input').forEach(input => input.value = '');
+      const nombreDisplay = firstRow.querySelector('.producto-nombre-display');
+      if (nombreDisplay) {
+        nombreDisplay.textContent = 'No seleccionado...';
+        nombreDisplay.classList.add('text-muted', 'small');
+      }
+      const stockDisplay = firstRow.querySelector('.nuevo-stock');
+      if (stockDisplay) {
+        stockDisplay.textContent = '0';
+        stockDisplay.dataset.stockActual = '0';
+      }
+      firstRow.querySelector('.precio-unitario').textContent = '0.00';
+      firstRow.querySelector('.precio-total').textContent = '0.00';
+    }
+
+    const totalLbl = document.getElementById('total-compra');
+    if (totalLbl) totalLbl.textContent = '0.00';
+  });
+});
+
+
 </script>
 
 <style>

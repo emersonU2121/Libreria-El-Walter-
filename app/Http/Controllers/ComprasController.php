@@ -80,12 +80,30 @@ class ComprasController extends Controller
         ->with('success', 'Compra registrada exitosamente');
 }
 
-    // Mostrar historial de compras
-    public function mostrar()
+   // Mostrar historial de compras (con filtro por fecha y paginación)
+public function mostrar(\Illuminate\Http\Request $request)
 {
-    $compras = Compra::with(['usuario', 'detalles.producto'])->latest()->get();
+    $q = \App\Models\Compra::with(['usuario', 'detalles.producto']);
+
+    // Filtros por fecha (?desde=YYYY-MM-DD&hasta=YYYY-MM-DD)
+    $desde = $request->date('desde');
+    $hasta = $request->date('hasta');
+
+    if ($desde && $hasta) {
+        $q->whereBetween('fecha', [$desde, $hasta]);
+    } elseif ($desde) {
+        $q->whereDate('fecha', '>=', $desde);
+    } elseif ($hasta) {
+        $q->whereDate('fecha', '<=', $hasta);
+    }
+
+    $compras = $q->orderByDesc('fecha')
+                 ->paginate(15)           // 👈 paginador
+                 ->withQueryString();     // mantiene los filtros en los links
+
     return view('compras.mostrar', compact('compras'));
 }
+
 
     // Ver detalles de una compra específica
     public function detalles($id)
@@ -93,4 +111,6 @@ class ComprasController extends Controller
         $compra = Compra::with(['detalles.producto', 'usuario'])->findOrFail($id);
         return view('compras.detalles', compact('compra'));
     }
+
+    
 }

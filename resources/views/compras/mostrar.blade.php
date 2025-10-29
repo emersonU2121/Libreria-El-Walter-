@@ -22,6 +22,27 @@
                 </div>
             @endif
 
+            {{-- ================== Filtros por fecha ================== --}}
+            <form method="GET" action="{{ route('compras.mostrar') }}" class="row g-2 align-items-end mb-3">
+                <div class="col-auto">
+                    <label for="desde" class="form-label mb-0 small text-muted">Desde</label>
+                    <input type="date" id="desde" name="desde" class="form-control form-control-sm"
+                           value="{{ request('desde') }}">
+                </div>
+                <div class="col-auto">
+                    <label for="hasta" class="form-label mb-0 small text-muted">Hasta</label>
+                    <input type="date" id="hasta" name="hasta" class="form-control form-control-sm"
+                           value="{{ request('hasta') }}">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-filter me-1"></i> Filtrar
+                    </button>
+                    <a href="{{ route('compras.mostrar') }}" class="btn btn-outline-secondary btn-sm">Limpiar</a>
+                </div>
+            </form>
+            {{-- ======================================================== --}}
+
             @if($compras->count() > 0)
             <div class="table-responsive">
                 <table class="table table-hover table-sm">
@@ -80,6 +101,16 @@
                     </tbody>
                 </table>
             </div>
+
+            {{-- ================== Paginación ================== --}}
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <small class="text-muted">
+                    Mostrando {{ $compras->firstItem() }}–{{ $compras->lastItem() }} de {{ $compras->total() }}
+                </small>
+                {{ $compras->appends(request()->except('page'))->links() }}
+            </div>
+            {{-- ================================================ --}}
+
             @else
             <div class="text-center py-5">
                 <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>

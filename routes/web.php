@@ -15,6 +15,9 @@ use App\Http\Controllers\inicioController;
 use App\Http\Controllers\ComprasController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\CompraReporteController;
+use App\Http\Controllers\ReporteProductoController;
+
 
 
 
@@ -171,3 +174,9 @@ Route::prefix('reportes')->group(function () {
     Route::get('/productos', [ReporteController::class, 'productosReporte'])->name('reportes.productos');
     Route::get('/usuarios', [ReporteController::class, 'usuariosReporte'])->name('reportes.usuarios');
 });
+
+Route::get('/compras/{compra}/reporte/pdf', [CompraReporteController::class, 'detallePdf'])
+     ->name('compras.reporte.detalle.pdf');
+
+     Route::get('/productos/reporte/stock-bajo', [ReporteProductoController::class, 'stockBajoPdf'])
+     ->name('productos.reporte.stock_bajo.pdf');

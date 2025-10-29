@@ -4,11 +4,16 @@
 
 <div class="container-fluid py-4 mt-5 px-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0 text-dark">Lista de Productos</h2>
+    <h2 class="mb-0 text-dark">Lista de Productos</h2>
+    <div class="d-flex align-items-center gap-2">
         <a href="{{ route('productos.registrar') }}" class="btn btn-primary">
             <i class="fas fa-plus me-2"></i>Registrar Producto
         </a>
+        <a href="{{ route('productos.reporte.stock_bajo.pdf', ['umbral' => 5]) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-file-pdf me-2"></i>Stock bajo (PDF)
+        </a>
     </div>
+</div>
 
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white py-3 border-bottom">

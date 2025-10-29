@@ -4,11 +4,18 @@
 <div class="container-fluid py-4 mt-5 px-3">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0 text-dark">Detalles de Compra #{{ $compra->idcompra }}</h2>
+    <h2 class="mb-0 text-dark">Detalles de Compra #{{ $compra->idcompra }}</h2>
+    
+    <div class="d-flex align-items-center gap-2">
         <a href="{{ route('compras.mostrar') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-2"></i>Historial de compras
         </a>
+
+        <a href="{{ route('compras.reporte.detalle.pdf', $compra->idcompra) }}" class="btn btn-outline-primary">
+            <i class="fas fa-file-pdf me-2"></i>Descargar PDF
+        </a>
     </div>
+</div>
 
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white py-3 border-bottom">

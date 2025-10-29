@@ -44,13 +44,6 @@
                         </ul>
                     </div>
 
-                    <a href="#" class="value text-decoration-none">
-                        <svg class="normal" viewBox="0 0 24 24">
-                            <path d="M20 6h-3V4c0-1.1-.9-2-2-2h-6c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM9 4h6v2H9V4zm1 12-3-3 1.41-1.41L10 12.17l5.59-5.59L17 8l-7 8z" fill="currentColor"/>
-                        </svg>
-                        Inventario
-                    </a>
-
                     {{-- === Marca (dropdown) === --}}
                     <div class="dropdown d-inline-block">
                         <a class="value text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">

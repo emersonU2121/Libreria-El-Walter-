@@ -224,6 +224,28 @@
   </div>
 </div>
 
+<!-- Modal Aviso Validación -->
+<div class="modal fade" id="modalAvisoValidacion" tabindex="-1" aria-labelledby="modalAvisoValidacionLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-sm">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title" id="modalAvisoValidacionLabel">
+          <i class="fas fa-exclamation-circle me-2"></i>Validación de compra
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-dark" id="avisoMsg">
+        Debes agregar al menos un producto para registrar la compra.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
 <script>
 let productoIndex = 0;
 let filaActualParaProducto = null; // Variable GLOBAL para saber qué fila actualizar
@@ -438,9 +460,37 @@ document.addEventListener('DOMContentLoaded', function () {
     if (totalLbl) totalLbl.textContent = '0.00';
   });
 });
-
-
 </script>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('form-compra');
+  if (!form) return;
+
+  form.addEventListener('submit', function (e) {
+    const filas = Array.from(document.querySelectorAll('.producto-item'));
+    
+    // Verifica si todas las filas tienen producto seleccionado
+    const hayIncompletas = filas.some(f => {
+      const idProd = (f.querySelector('.producto-id-hidden')?.value || '').trim();
+      return idProd === ''; // fila vacía
+    });
+
+    if (hayIncompletas) {
+      e.preventDefault();
+      const modal = new bootstrap.Modal(document.getElementById('modalAvisoValidacion'));
+      document.getElementById('avisoMsg').textContent =
+        'No puedes registrar la compra. Todas las filas deben tener un producto seleccionado.';
+      modal.show();
+    }
+  });
+});
+</script>
+
+
+
 
 <style>
 .producto-item {

@@ -61,6 +61,10 @@
         <i class="fas fa-search me-1"></i> Buscar Producto
     </button>
     
+    <small class="text-muted d-block mt-1">
+        Nuevo Stock: 
+        <span class="fw-semibold text-primary nuevo-stock" data-stock-actual="0">0</span>
+    </small>
     
 </div>
                                     

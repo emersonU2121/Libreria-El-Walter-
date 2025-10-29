@@ -115,7 +115,7 @@
                     @endif
                     @endauth
 
-                    @auth
+@auth
 @if(Auth::user()->rol === 'Administrador')
 <div class="dropdown d-inline-block">
     <a class="value text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -126,7 +126,7 @@
     </a>
     <ul class="dropdown-menu">
         <li><a class="dropdown-item" href="{{ route('backups.index') }}">Respaldos</a></li>
-    </ul>
+        <li><a class="dropdown-item" href="{{ route('reportes.mostrar') }}">Reportes</a></li>    </ul>
 </div>
 @endif
 @endauth

@@ -61,15 +61,12 @@
         <i class="fas fa-search me-1"></i> Buscar Producto
     </button>
     
-    <small class="text-muted d-block mt-1">
-        Nuevo Stock: 
-        <span class="fw-semibold text-primary nuevo-stock" data-stock-actual="0">0</span>
-    </small>
+    
 </div>
                                     
                                     <!-- Origen/Concepto -->
                                     <div class="col-md-2">
-                                        <label class="form-label small fw-semibold text-dark">Origen/Concepto</label>
+                                        <label class="form-label small fw-semibold text-dark">Origen</label>
                                         <input type="text" name="productos[0][concepto]" class="form-control form-control-sm" 
                                                placeholder="Ej: El mercado..." required>
                                     </div>
@@ -88,7 +85,7 @@
                                             name="productos[0][precio_compra]"
                                             class="form-control form-control-sm precio-compra-editable"
                                             step="0.01"
-                                            min="0.00"
+                                            min="0.01"
                                             value="0.00"
                                             placeholder="0.00"
                                             required>

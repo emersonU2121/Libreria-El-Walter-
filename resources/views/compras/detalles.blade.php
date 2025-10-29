@@ -63,7 +63,7 @@
                     <thead class="table-light">
                         <tr>
                             <th class="text-dark">Producto</th>
-                            <th class="text-dark">Origen/Concepto</th>
+                            <th class="text-dark">Origen</th>
                             <th class="text-dark text-center">Unidades</th>
                             <th class="text-dark text-end">Precio Unitario</th>
                             <th class="text-dark text-end">Precio Total</th>

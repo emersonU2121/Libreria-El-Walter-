@@ -37,7 +37,7 @@
   <table style="width:100%;">
     <tr>
       <td class="muted">Generado: {{ $generado }}</td>
-      <td class="right muted">Página: <span class="page-number"></span></td>
+      
     </tr>
   </table>
 

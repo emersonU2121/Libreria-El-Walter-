@@ -38,6 +38,7 @@ class ReporteController extends Controller
         ];
 
         $pdf = PDF::loadView('reportes.pdf.categoriasReporte', $data);
+        $pdf->set_option('isPhpEnabled', true);
         return $pdf->download('reporte_categorias_' . now()->format('Y_m_d') . '.pdf');
     }
 
@@ -58,6 +59,7 @@ class ReporteController extends Controller
         ];
 
         $pdf = PDF::loadView('reportes.pdf.marcasReporte', $data);
+        $pdf->set_option('isPhpEnabled', true);
         return $pdf->download('reporte_marcas_' . now()->format('Y_m_d') . '.pdf');
     }
 
@@ -89,6 +91,7 @@ class ReporteController extends Controller
         ];
 
         $pdf = PDF::loadView('reportes.pdf.productosReporte', $data);
+        $pdf->set_option('isPhpEnabled', true);
         return $pdf->download('reporte_productos_' . now()->format('Y_m_d') . '.pdf');
     }
 
@@ -109,6 +112,7 @@ class ReporteController extends Controller
         ];
 
         $pdf = PDF::loadView('reportes.pdf.usuariosReporte', $data);
+        $pdf->set_option('isPhpEnabled', true);
         return $pdf->download('reporte_usuarios_' . now()->format('Y_m_d') . '.pdf');
     }
 }

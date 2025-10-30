@@ -56,7 +56,7 @@
                 </div>
             </div>
 
-            <!-- Detalles de productos -->
+            <!-- Detalles de productos --->
             <h6 class="text-dark fw-semibold mb-3">Productos Comprados</h6>
             <div class="table-responsive">
                 <table class="table table-bordered table-sm">

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Barryvdh\DomPDF\Facade\Pdf;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage; // 👈 AÑADE ESTO
@@ -22,6 +24,8 @@ class ProductoController extends Controller
 
         return view('producto.registrarProducto', compact('marcas','categorias'));
     }
+
+
 
     // ============================
     //  Muestra listado
@@ -200,5 +204,33 @@ public function inactivo($id)
         $p->save();
 
         return back()->with('ok','Producto reactivado correctamente');
+    }
+
+    public function generarListaDeCompraPdf(Request $request)
+    {
+        // 1. Validar que recibimos un array de IDs
+        $request->validate([
+            'producto_ids' => 'required|array|min:1',
+            'producto_ids.*' => 'exists:producto,idproducto'
+        ], [
+            'producto_ids.required' => 'No se seleccionó ningún producto para la lista.'
+        ]);
+
+        $ids = $request->input('producto_ids');
+
+        // 2. Obtener los productos SELECCIONADOS
+        $productosSeleccionados = Producto::whereIn('idproducto', $ids)
+                                    ->orderBy('stock', 'asc') // Ordena por stock
+                                    ->get();
+
+        // 3. Cargar la vista Blade especial para el PDF
+        //    (Crearemos esta vista en el siguiente paso)
+        $pdf = Pdf::loadView('producto.listaDeCompraPdf', [
+            'productos' => $productosSeleccionados,
+            'fecha' => now()->format('d/m/Y')
+        ]);
+
+        // 4. Devolver el PDF al navegador
+        return $pdf->stream('lista_de_compra_seleccionada.pdf');
     }
 }

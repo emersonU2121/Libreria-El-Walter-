@@ -140,6 +140,9 @@ Route::post('/compras', [ComprasController::class, 'store'])->name('compras.stor
 Route::get('/compras/mostrar', [ComprasController::class, 'mostrar'])->name('compras.mostrar');
 Route::get('/compras/{id}/detalles', [ComprasController::class, 'detalles'])->name('compras.detalles');
 
+Route::post('/productos/lista-de-compra-pdf', [ProductoController::class, 'generarListaDeCompraPdf'])
+    ->name('productos.listaDeCompraPdf');
+
 // ====== BACKUP========
 
 // routes/web.php

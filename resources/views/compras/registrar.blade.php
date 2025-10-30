@@ -286,7 +286,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                     <button type="submit" class="btn btn-primary" id="btn-generar-lista-pdf">
-                        <i class="fas fa-print me-2"></i>Generar lista de compras
+                        <i class="fas fa-print me-2"></i>Generar lista de compra
                     </button>
                 </div>
             </form>

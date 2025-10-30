@@ -62,8 +62,6 @@
     </button>
     
     <small type="hidden" class="hidden" >
-        Nuevo Stock: 
-        <span class="fw-semibold text-primary nuevo-stock" data-stock-actual="0">0</span>
     </small>
     
 </div>
@@ -291,7 +289,6 @@ document.addEventListener('click', function(e) {
         nombreDisplay.classList.remove('small');
 
         // Guardar el stock actual en el data-attribute
-        stockDisplay.dataset.stockActual = stock;
         
         // Autocompletar precio de compra (si está vacío)
         if (precioInput.value === '0.00' || precioInput.value === '') {

@@ -2,13 +2,17 @@
 
 @section('contenido')
 <div class="container-fluid py-4 mt-5 px-3">
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0 text-dark">Registrar Nueva Compra</h2>
+    <h2 class="mb-0 text-dark">Registrar Nueva Compra</h2>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#modalListaDeCompra">
+            <i class="fas fa-print me-2"></i>Crear Lista de Compra (PDF)
+        </button>
         <a href="{{ route('compras.mostrar') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-2"></i>Historial de compras
         </a>
     </div>
+</div>
 
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white py-3 border-bottom">
@@ -19,21 +23,20 @@
                 @csrf
                 <div class="mb-3">
     <label for="concepto_general" class="form-label fw-semibold text-dark">
-  Concepto General de la Compra
+    Concepto General de la Compra
     </label>
         <input type="text" 
-            name="concepto_general" 
-            id="concepto_general" 
-            class="form-control" 
-            placeholder="Ej: Pedido semanal a proveedor X, Compra de libros para inventario..." 
-            required
-            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" 
-            title="Solo se permiten letras y espacios"
-            oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')">
+               name="concepto_general" 
+               id="concepto_general" 
+               class="form-control" 
+               placeholder="Ej: Pedido semanal a proveedor X, Compra de libros para inventario..." 
+               required
+               pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" 
+               title="Solo se permiten letras y espacios"
+               oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')">
 
 </div>
                 
-                <!-- Productos -->
                 <div class="mb-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="mb-0 text-dark fw-semibold">Items de Compra</h6>
@@ -46,7 +49,6 @@
                         <div class="producto-item card border mb-3">
                             <div class="card-body">
                                 <div class="row g-3 align-items-start">
-                                    <!-- Producto -->
                                     <div class="col-md-3">
     <label class="form-label small fw-semibold text-dark">Producto</label>
     
@@ -61,41 +63,34 @@
         <i class="fas fa-search me-1"></i> Buscar Producto
     </button>
     
-    <small class="text-muted d-block mt-1">
-        Nuevo Stock: 
-        <span class="fw-semibold text-primary nuevo-stock" data-stock-actual="0">0</span>
-    </small>
+    
 </div>
                                     
-                                    <!-- Origen/Concepto -->
                                     <div class="col-md-2">
                                         <label class="form-label small fw-semibold text-dark">Origen/Concepto</label>
                                         <input type="text" name="productos[0][concepto]" class="form-control form-control-sm" 
                                                placeholder="Ej: El mercado..." required>
                                     </div>
 
-                                    <!-- Unidades -->
                                     <div class="col-md-1">
                                         <label class="form-label small fw-semibold text-dark">Unidades</label>
                                         <input type="number" name="productos[0][unidades]" class="form-control form-control-sm unidades" 
                                                min="1" placeholder="Cant" required>
                                     </div>
 
-                                    <!-- PRECIO COMPRA EDITABLE -->
                                     <div class="col-md-2">
                                     <label class="form-label small fw-semibold text-dark">Precio Compra</label>
                                     <input type="number"
                                             name="productos[0][precio_compra]"
                                             class="form-control form-control-sm precio-compra-editable"
                                             step="0.01"
-                                            min="0.00"
+                                            min="0.01"
                                             value="0.00"
                                             placeholder="0.00"
                                             required>
                                     </div>
 
 
-                                    <!-- Precio Unitario (Calculado) -->
                                     <div class="col-md-1">
                                         <label class="form-label small fw-semibold text-dark">P. Unitario</label>
                                         <div class="bg-light rounded p-2 border text-center">
@@ -103,7 +98,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Precio Total -->
                                     <div class="col-md-2">
                                         <label class="form-label small fw-semibold text-dark">Precio Total</label>
                                         <div class="bg-light rounded p-2 border text-center">
@@ -111,7 +105,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Botón Eliminar -->
                                     <div class="col-md-1 d-flex align-items-end">
                                         <button type="button" class="btn btn-outline-danger btn-sm btn-remove">
                                             <i class="fas fa-times"></i>
@@ -123,7 +116,6 @@
                     </div>
                 </div>
 
-                <!-- Total y Botón -->
                 <div class="row mt-4">
                     <div class="col-md-12">
                         <div class="bg-light rounded p-3 border">
@@ -142,8 +134,8 @@
                                 <button type="submit" class="btn btn-success px-4">
                                 <i class="fas fa-save me-2"></i>Registrar Compra
                                 </button>
-                            </div>
-                            </div>
+                                </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -201,50 +193,106 @@
         </div>
     </div>
 </div>
-<!-- Modal Confirmar Cancelación -->
 <div class="modal fade" id="modalConfirmarCancelacion" tabindex="-1" aria-labelledby="modalConfirmarCancelacionLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow-sm">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title" id="modalConfirmarCancelacionLabel">
-          <i class="fas fa-exclamation-triangle me-2"></i>Confirmar cancelación
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body text-center">
-        <p class="fw-semibold mb-3 text-dark">
-          ¿Deseas cancelar la operación actual? Todos los campos y productos agregados se eliminarán.
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, volver</button>
-          <button type="button" class="btn btn-danger" id="btnConfirmarCancelacion">Sí, cancelar</button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-sm">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="modalConfirmarCancelacionLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmar cancelación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="fw-semibold mb-3 text-dark">
+                    ¿Deseas cancelar la operación actual? Todos los campos y productos agregados se eliminarán.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, volver</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarCancelacion">Sí, cancelar</button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </div>
 
-<!-- Modal Aviso Validación -->
 <div class="modal fade" id="modalAvisoValidacion" tabindex="-1" aria-labelledby="modalAvisoValidacionLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow-sm">
-      <div class="modal-header bg-warning">
-        <h5 class="modal-title" id="modalAvisoValidacionLabel">
-          <i class="fas fa-exclamation-circle me-2"></i>Validación de compra
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body text-dark" id="avisoMsg">
-        Debes agregar al menos un producto para registrar la compra.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
-      </div>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-sm">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="modalAvisoValidacionLabel">
+                    <i class="fas fa-exclamation-circle me-2"></i>Validación de compra
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-dark" id="avisoMsg">
+                Debes agregar al menos un producto para registrar la compra.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
+<div class="modal fade" id="modalListaDeCompra" tabindex="-1" aria-labelledby="modalListaDeCompraLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="{{ route('productos.listaDeCompraPdf') }}" method="POST" target="_blank">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalListaDeCompraLabel">Crear Lista de Compra</h5>
+                    <input type="text" class="form-control ms-3" id="filtro-lista-compra-modal" placeholder="Buscar por nombre...">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="lista-compra-modal-cards" class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-3">
+                        
+                        @forelse($productosBajoStock as $producto)
+                        <div class="col producto-card-lista">
+                            <div class="card h-100 card-lista-compra">
+                                <img src="{{ $producto->imagen ? asset('storage/'.$producto->imagen) : asset('images/no-image.png') }}" 
+                                     class="card-img-top" alt="{{ $producto->nombre }}" style="height: 180px; object-fit: cover;">
+                                
+                                <div class="card-body">
+                                    <h6 class="card-title fw-semibold text-dark">{{ $producto->nombre }}</h6>
+                                    <p class="card-text small text-danger">
+                                        <strong>Stock Actual: {{ $producto->stock }}</strong>
+                                    </p>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <div class="form-check">
+                                        <input class="form-check-input check-lista-producto" 
+                                               type="checkbox" 
+                                               name="producto_ids[]"
+                                               value="{{ $producto->idproducto }}" 
+                                               id="check-lista-{{ $producto->idproducto }}">
+                                        <label class="form-check-label fw-semibold" for="check-lista-{{ $producto->idproducto }}">
+                                            Seleccionar
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="col-12">
+                            <div class="alert alert-success text-center">
+                                No hay productos con bajo stock (stock > 0).
+                            </div>
+                        </div>
+                        @endforelse
 
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary" id="btn-generar-lista-pdf">
+                        <i class="fas fa-print me-2"></i>Generar lista de compra
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <script>
 let productoIndex = 0;
@@ -281,16 +329,12 @@ document.addEventListener('click', function(e) {
         const inputId = filaActualParaProducto.querySelector('.producto-id-hidden');
         const nombreDisplay = filaActualParaProducto.querySelector('.producto-nombre-display');
         const precioInput = filaActualParaProducto.querySelector('.precio-compra-editable');
-        const stockDisplay = filaActualParaProducto.querySelector('.nuevo-stock');
 
         // Poner los datos en la fila
         inputId.value = id;
         nombreDisplay.textContent = nombre;
         nombreDisplay.classList.remove('text-muted');
         nombreDisplay.classList.remove('small');
-
-        // Guardar el stock actual en el data-attribute
-        stockDisplay.dataset.stockActual = stock;
         
         // Autocompletar precio de compra (si está vacío)
         if (precioInput.value === '0.00' || precioInput.value === '') {
@@ -352,11 +396,6 @@ document.getElementById('btn-agregar-producto').addEventListener('click', functi
     // Limpiar precio de compra
     newProducto.querySelector('.precio-compra-editable').value = '0.00';
 
-    // Limpiar display de stock
-    const stockDisplay = newProducto.querySelector('.nuevo-stock');
-    stockDisplay.textContent = '0';
-    stockDisplay.dataset.stockActual = '0';
-    
     container.appendChild(newProducto);
 });
 
@@ -393,11 +432,6 @@ function calcularProducto(productoItem) {
     // Mostrar resultados
     productoItem.querySelector('.precio-unitario').textContent = precio.toFixed(2);
     productoItem.querySelector('.precio-total').textContent = precioTotal.toFixed(2);
-    
-    // Calcular nuevo stock (AHORA LEE DEL DATA-ATTRIBUTE)
-    const stockDisplay = productoItem.querySelector('.nuevo-stock');
-    const stockActual = parseInt(stockDisplay.dataset.stockActual) || 0;
-    stockDisplay.textContent = stockActual + unidades;
 }
 
 function calcularTotal() {
@@ -416,49 +450,44 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // --- BOTÓN: Cancelar Operación (versión con modal bonito) ---
 document.addEventListener('DOMContentLoaded', function () {
-  const btnCancelar = document.getElementById('btnCancelarCompra');
-  const btnConfirmar = document.getElementById('btnConfirmarCancelacion');
-  const modalCancel = new bootstrap.Modal(document.getElementById('modalConfirmarCancelacion'));
-  const form = document.getElementById('form-compra');
+    const btnCancelar = document.getElementById('btnCancelarCompra');
+    const btnConfirmar = document.getElementById('btnConfirmarCancelacion');
+    const modalCancel = new bootstrap.Modal(document.getElementById('modalConfirmarCancelacion'));
+    const form = document.getElementById('form-compra');
 
-  if (!btnCancelar || !btnConfirmar || !form) return;
+    if (!btnCancelar || !btnConfirmar || !form) return;
 
-  // Mostrar el modal al hacer clic en "Cancelar"
-  btnCancelar.addEventListener('click', function () {
-    modalCancel.show();
-  });
+    // Mostrar el modal al hacer clic en "Cancelar"
+    btnCancelar.addEventListener('click', function () {
+        modalCancel.show();
+    });
 
-  // Confirmar limpieza del formulario
-  btnConfirmar.addEventListener('click', function () {
-    modalCancel.hide(); // Cerrar el modal
+    // Confirmar limpieza del formulario
+    btnConfirmar.addEventListener('click', function () {
+        modalCancel.hide(); // Cerrar el modal
 
-    // --- Limpieza total del formulario ---
-    form.reset();
-    productoIndex = 0;
+        // --- Limpieza total del formulario ---
+        form.reset();
+        productoIndex = 0;
 
-    const container = document.getElementById('productos-container');
-    const firstRow = container.firstElementChild;
-    [...container.querySelectorAll('.producto-item')].slice(1).forEach(el => el.remove());
+        const container = document.getElementById('productos-container');
+        const firstRow = container.firstElementChild;
+        [...container.querySelectorAll('.producto-item')].slice(1).forEach(el => el.remove());
 
-    if (firstRow) {
-      firstRow.querySelectorAll('input').forEach(input => input.value = '');
-      const nombreDisplay = firstRow.querySelector('.producto-nombre-display');
-      if (nombreDisplay) {
-        nombreDisplay.textContent = 'No seleccionado...';
-        nombreDisplay.classList.add('text-muted', 'small');
-      }
-      const stockDisplay = firstRow.querySelector('.nuevo-stock');
-      if (stockDisplay) {
-        stockDisplay.textContent = '0';
-        stockDisplay.dataset.stockActual = '0';
-      }
-      firstRow.querySelector('.precio-unitario').textContent = '0.00';
-      firstRow.querySelector('.precio-total').textContent = '0.00';
-    }
+        if (firstRow) {
+            firstRow.querySelectorAll('input').forEach(input => input.value = '');
+            const nombreDisplay = firstRow.querySelector('.producto-nombre-display');
+            if (nombreDisplay) {
+                nombreDisplay.textContent = 'No seleccionado...';
+                nombreDisplay.classList.add('text-muted', 'small');
+            }
+            firstRow.querySelector('.precio-unitario').textContent = '0.00';
+            firstRow.querySelector('.precio-total').textContent = '0.00';
+        }
 
-    const totalLbl = document.getElementById('total-compra');
-    if (totalLbl) totalLbl.textContent = '0.00';
-  });
+        const totalLbl = document.getElementById('total-compra');
+        if (totalLbl) totalLbl.textContent = '0.00';
+    });
 });
 </script>
 
@@ -466,26 +495,63 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('form-compra');
-  if (!form) return;
+    const form = document.getElementById('form-compra');
+    if (!form) return;
 
-  form.addEventListener('submit', function (e) {
-    const filas = Array.from(document.querySelectorAll('.producto-item'));
-    
-    // Verifica si todas las filas tienen producto seleccionado
-    const hayIncompletas = filas.some(f => {
-      const idProd = (f.querySelector('.producto-id-hidden')?.value || '').trim();
-      return idProd === ''; // fila vacía
+    form.addEventListener('submit', function (e) {
+        const filas = Array.from(document.querySelectorAll('.producto-item'));
+        
+        // Verifica si todas las filas tienen producto seleccionado
+        const hayIncompletas = filas.some(f => {
+            const idProd = (f.querySelector('.producto-id-hidden')?.value || '').trim();
+            return idProd === ''; // fila vacía
+        });
+
+        if (hayIncompletas) {
+            e.preventDefault();
+            const modal = new bootstrap.Modal(document.getElementById('modalAvisoValidacion'));
+            document.getElementById('avisoMsg').textContent =
+                'No puedes registrar la compra. Todas las filas deben tener un producto seleccionado.';
+            modal.show();
+        }
     });
+});
 
-    if (hayIncompletas) {
-      e.preventDefault();
-      const modal = new bootstrap.Modal(document.getElementById('modalAvisoValidacion'));
-      document.getElementById('avisoMsg').textContent =
-        'No puedes registrar la compra. Todas las filas deben tener un producto seleccionado.';
-      modal.show();
+// --- LÓGICA PARA EL NUEVO MODAL DE LISTA DE COMPRA ---
+
+// 1. Filtro de búsqueda en el modal de Lista de Compra
+document.getElementById('filtro-lista-compra-modal')?.addEventListener('input', function(e) {
+    const filtro = e.target.value.toLowerCase();
+    document.querySelectorAll('#lista-compra-modal-cards .producto-card-lista').forEach(card => {
+        const nombre = card.querySelector('.card-title').textContent.toLowerCase();
+        card.style.display = nombre.includes(filtro) ? 'block' : 'none';
+    });
+});
+
+// 2. Hacer clickeable la card para marcar/desmarcar el checkbox
+document.addEventListener('click', function(e) {
+    const card = e.target.closest('.card-lista-compra');
+    if (card) {
+        // Evita que el click en el checkbox se dispare dos veces
+        if (e.target.classList.contains('check-lista-producto')) return;
+        
+        const checkbox = card.querySelector('.check-lista-producto');
+        if (checkbox) {
+            checkbox.checked = !checkbox.checked;
+            // Dispara el evento 'change' para que el CSS se actualice
+            checkbox.dispatchEvent(new Event('change'));
+        }
     }
-  });
+});
+
+// 3. Cambiar estilo visual de la card cuando el checkbox cambia
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('check-lista-producto')) {
+        const card = e.target.closest('.card-lista-compra');
+        if (card) {
+            card.classList.toggle('selected', e.target.checked);
+        }
+    }
 });
 </script>
 
@@ -546,6 +612,22 @@ document.addEventListener('DOMContentLoaded', function () {
     display: flex;
     align-items: center;
     background-color: #f8f9fa;
+}
+
+/* --- NUEVOS ESTILOS PARA MODAL LISTA DE COMPRA --- */
+.card-lista-compra {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.card-lista-compra:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+/* Estilo cuando la card está seleccionada (checkbox marcado) */
+.card-lista-compra.selected {
+    border-color: #0d6efd;
+    border-width: 2px;
+    background-color: #eef7ff;
 }
 </style>
 @endsection

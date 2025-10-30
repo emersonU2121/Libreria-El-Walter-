@@ -24,6 +24,8 @@ class CompraReporteController extends Controller
 
         $pdf = Pdf::loadView('compras.reporte_detalle_pdf', $data)
                   ->setPaper('a4', 'portrait');
+        
+                  $pdf->set_option('isPhpEnabled', true);
 
         return $pdf->download("compra_{$compra->idcompra}.pdf");
     }

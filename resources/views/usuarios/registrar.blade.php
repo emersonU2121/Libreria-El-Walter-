@@ -24,7 +24,7 @@
     <form action="{{ route('usuarios.store') }}" method="post" autocomplete="off" novalidate id="formRegistro">
         @csrf
 
-        {{-- Señuelos anti-autocompletado --}}
+     
         <input type="text" name="fakeuser" autocomplete="username" style="display:none">
         <input type="password" name="fakepass" autocomplete="current-password" style="display:none">
 
@@ -60,7 +60,7 @@
 
         <div class="mb-3">
             <label for="contrasena" class="form-label">Contraseña</label>
-            {{-- name con ñ porque tu Controller lo valida así --}}
+           
             <input type="password" id="contrassena" name="contraseña" class="form-control"
                    required autocomplete="new-password" data-no-autofill readonly>
         </div>
@@ -77,12 +77,30 @@
 
         <div class="d-flex justify-content-between">
             <button type="submit" class="btn btn-dark">Crear Cuenta</button>
-            <a href="{{ route('inicio') }}" class="btn btn-danger">Cancelar</a>
+            <a href="{{ route('usuarios.mostrar') }}" class="btn btn-danger">Cancelar</a>
         </div>
     </form>
 </div>
 
-{{-- Evitar autocompletado: quitar readonly al enfocar + VALIDACIÓN DE DOMINIO --}}
+<button type="button" 
+        class="btn btn-primary shadow" 
+        id="btn-ayuda" 
+        style="
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 1050;
+            width: 50px;         
+            height: 50px;        
+            border-radius: 50%;  
+            font-size: 1.5rem;  
+            font-weight: bold;   
+            padding: 0;          
+        ">
+    ?
+</button>
+
+
 <script>
   // Quitar readonly al enfocar (anti-autofill)
   document.querySelectorAll('[data-no-autofill]').forEach(el => {

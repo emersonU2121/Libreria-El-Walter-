@@ -75,8 +75,15 @@
     }
 </style>
 
+
+
 <div class="formulario-rectangular">
-    <h1>Registro de Producto</h1>
+ <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0 text-dark">Registro de productos</h2>
+     <a href="{{ route('productos.mostrar') }}" class="btn btn-primary" align="right" style="margin-bottom: 15px;">
+            <i class="fas fa-plus me-2"></i>Lista de productos
+        </a>
+</div>
 
     @if ($errors->any())
     <div class="alert alert-danger">
@@ -230,11 +237,29 @@
 
         <!-- BOTONES CENTRADOS EN LA PARTE INFERIOR -->
         <div class="btn-container">
+            <a href="{{ route('productos.mostrar') }}" class="btn btn-danger">Cancelar</a>
             <button type="submit" class="btn btn-dark">Guardar</button>
-            <a href="{{ route('inicio') }}" class="btn btn-danger">Cancelar</a>
+            
         </div>
     </form>
 </div>
+<button type="button" 
+        class="btn btn-primary shadow" 
+        id="btn-ayuda" 
+        style="
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 1050;
+            width: 50px;         
+            height: 50px;        
+            border-radius: 50%;  
+            font-size: 1.5rem;  
+            font-weight: bold;   
+            padding: 0;          
+        ">
+    ?
+</button>
 
 <script>
 // ===== PREVIEW DE IMAGEN =====

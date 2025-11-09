@@ -193,3 +193,101 @@
     </script>
     @endif
 @endpush
+
+@push('scripts')
+    {{-- SweetAlert2 (cárgalo una vez en tu layout si prefieres) --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnAyuda = document.getElementById('btn-ayuda');
+      if (!btnAyuda) return;
+
+      btnAyuda.addEventListener('click', async () => {
+        // Paso 0: Portada
+        const steps = [
+          {
+            icon: 'question',
+            title: 'Ayuda rápida',
+            html: `
+              <div class="text-start">
+                <p>Esta pantalla te permite <b>registrar, buscar, editar y eliminar</b> marcas.</p>
+                <ul class="mb-2">
+                  <li><b>Registrar:</b> completa el formulario de la izquierda y pulsa <em>Registrar Marca</em>.</li>
+                  <li><b>Buscar:</b> usa el cuadro <em>Buscar marcas por nombre…</em> y presiona <em>Buscar</em>.</li>
+                  <li><b>Editar:</b> botón azul <em>Editar</em> en la fila.</li>
+                  <li><b>Eliminar:</b> botón rojo <em>Eliminar</em> en la fila (se te pedirá confirmación).</li>
+                </ul>
+                <p class="mb-0"><small>Tip: puedes desplazarte por la tabla cuando hay muchas marcas.</small></p>
+              </div>
+            `,
+            confirmButtonText: 'Siguiente',
+            allowOutsideClick: false
+          },
+          // Paso 1: Registrar
+          {
+            icon: 'info',
+            title: 'Registrar nueva marca',
+            html: `
+              <div class="text-start">
+                <p>En el panel izquierdo:</p>
+                <ol class="mb-0">
+                  <li>Escribe el <b>Nombre de la Marca</b>.</li>
+                  <li>Haz clic en <b>Registrar Marca</b>.</li>
+                </ol>
+              </div>
+            `,
+            confirmButtonText: 'Siguiente',
+            allowOutsideClick: false
+          },
+          // Paso 2: Buscar
+          {
+            icon: 'info',
+            title: 'Buscar marcas',
+            html: `
+              <div class="text-start">
+                <p>En el encabezado de la tabla:</p>
+                <ol class="mb-0">
+                  <li>Escribe el nombre en <b>Buscar marcas por nombre</b>.</li>
+                  <li>Haz clic en <b>Buscar</b>.</li>
+                </ol>
+              </div>
+            `,
+            confirmButtonText: 'Siguiente',
+            allowOutsideClick: false
+          },
+          // Paso 3: Editar / Eliminar
+          {
+            icon: 'info',
+            title: 'Editar / Eliminar',
+            html: `
+              <div class="text-start">
+                <p>En cada fila de la tabla:</p>
+                <ul class="mb-2">
+                  <li><b>Editar:</b> abre el formulario para actualizar el nombre.</li>
+                  <li><b>Eliminar:</b> pide confirmación antes de borrar.</li>
+                </ul>
+                <p class="mb-0"><small>Si no ves acciones, verifica tus permisos.</small></p>
+              </div>
+            `,
+            confirmButtonText: 'Entendido',
+            allowOutsideClick: false
+          }
+        ];
+
+        // Ejecuta el tour como una cola
+        const swalQueue = Swal.mixin({
+          showCancelButton: false,
+          focusConfirm: true,
+          confirmButtonText: 'Siguiente',
+          confirmButtonColor: '#3085d6',
+          width: 600
+        });
+
+        for (const step of steps) {
+          await swalQueue.fire(step);
+        }
+      });
+    });
+    </script>
+@endpush

@@ -124,4 +124,143 @@
         </div>
     </div>
 </div>
+<button type="button" 
+        class="btn btn-primary shadow" 
+        id="btn-ayuda" 
+        style="
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 1050;
+            width: 50px;         
+            height: 50px;        
+            border-radius: 50%;  
+            font-size: 1.5rem;  
+            font-weight: bold;   
+            padding: 0;          
+        ">
+    ?
+</button>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const $ = (s) => document.querySelector(s);
+
+  function highlight(el) {
+    if (!el) return false;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('help-pulse');
+    setTimeout(() => el.classList.remove('help-pulse'), 1400);
+    return true;
+  }
+
+  function firstInTable(selector) {
+    const t = $('#tabla-historial-compras') || document;
+    return t.querySelector(selector);
+  }
+
+  const btnAyuda = $('#btn-ayuda');
+  if (!btnAyuda) return;
+
+  btnAyuda.addEventListener('click', async () => {
+    let i = 0;
+    const steps = [
+      {
+        icon: 'question',
+        title: 'Historial de Compras',
+        html: `<div class="text-start">
+                 <p>Consulta y filtra las <b>compras registradas</b>. Puedes iniciar una <b>Nueva Compra</b> o revisar el detalle de cada una.</p>
+               </div>`,
+        onOpen: () => highlight($('#btn-nueva-compra'))
+      },
+      {
+        icon: 'info',
+        title: 'Rango de fechas',
+        html: `<div class="text-start">
+                 <p>Usa <b>Desde</b> y <b>Hasta</b> para limitar el período mostrado.</p>
+                 <small class="text-muted">Formato: Dia; Mes; Año.</small>
+               </div>`,
+        onOpen: () => highlight($('#filtro_desde')) || highlight($('#filtro_hasta'))
+      },
+      {
+        icon: 'info',
+        title: 'Filtrar / Limpiar',
+        html: `<div class="text-start">
+                 <ul class="mb-0">
+                   <li><b>Filtrar</b> aplica el rango seleccionado.</li>
+                   <li><b>Limpiar</b> borra filtros y muestra todo.</li>
+                 </ul>
+               </div>`,
+        onOpen: () => highlight($('#btn-filtrar')) || highlight($('#btn-limpiar'))
+      },
+      {
+        icon: 'info',
+        title: 'Tabla de compras',
+        html: `<div class="text-start">
+                 <p>Columnas:</p>
+                 <ul class="mb-0">
+                   <li><b>Fecha</b> de registro.</li>
+                   <li><b>Productos</b>: cantidad de productos en compra.</li>
+                   <li><b>Orígenes</b> De donde proceden.</li>
+                   <li><b>Unidades</b> totales.</li>
+                   <li><b>Total</b> de la compra.</li>
+                   <li><b>Usuario</b> que registró.</li>
+                   <li><b>Acciones</b>: <em>Ver</em> detalle.</li>
+                 </ul>
+               </div>`,
+        onOpen: () => highlight($('#tabla-historial-compras'))
+      },
+      {
+        icon: 'info',
+        title: 'Ver detalle',
+        html: `<div class="text-start">
+                 <p>Usa <b>Ver</b> para abrir el detalle de ítems y montos de la compra seleccionada.</p>
+               </div>`,
+        onOpen: () => highlight(firstInTable('.btn-ver-compra')) || highlight(firstInTable('a.btn-outline-primary'))
+      }
+    ];
+
+    const modal = Swal.mixin({
+      showCancelButton: false,
+      focusConfirm: true,
+      confirmButtonText: 'Siguiente',
+      confirmButtonColor: '#3085d6',
+      width: 600,
+      allowOutsideClick: false,
+      didOpen: () => {
+        const s = steps[i];
+        if (s && typeof s.onOpen === 'function') setTimeout(s.onOpen, 50);
+      }
+    });
+
+    for (i = 0; i < steps.length; i++) {
+      await modal.fire({
+        icon: steps[i].icon,
+        title: steps[i].title,
+        html: steps[i].html,
+        confirmButtonText: i === steps.length - 1 ? 'Entendido' : 'Siguiente'
+      });
+    }
+  });
+});
+</script>
+
+<style>
+/* Efecto de resalte */
+.help-pulse {
+  box-shadow: 0 0 0 0 rgba(49,132,253,.5);
+  animation: help-pulse 1.4s ease-out 1;
+  outline: 2px solid rgba(49,132,253,.35);
+  border-radius: 6px;
+}
+@keyframes help-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(49,132,253,.5); }
+  70%  { box-shadow: 0 0 0 12px rgba(49,132,253,0); }
+  100% { box-shadow: 0 0 0 0 rgba(49,132,253,0); }
+}
+</style>
+@endpush
+

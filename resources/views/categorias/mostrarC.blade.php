@@ -195,3 +195,114 @@
 @push('scripts')
 <script src="{{ asset('js/categorias/mostrarC.js') }}"></script>
 @endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const $ = (sel) => document.querySelector(sel);
+
+  // Resalta el elemento del paso
+  function focusStep(el) {
+    if (!el) return false;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('help-pulse');
+    setTimeout(() => el.classList.remove('help-pulse'), 1400);
+    return true;
+  }
+
+  const btnAyuda = document.getElementById('btn-ayuda');
+  if (!btnAyuda) return;
+
+  btnAyuda.addEventListener('click', async () => {
+    let i = 0;
+    const steps = [
+      {
+        icon: 'question',
+        title: 'Ayuda rápida',
+        html: `
+          <div class="text-start">
+            <p>En esta pantalla puedes <b>registrar, buscar, editar y eliminar</b> categorías.</p>
+            <ul class="mb-0">
+              <li>El panel <b>izquierdo</b> registra nuevas categorías.</li>
+              <li>El panel <b>derecho</b> lista y permite buscar/accionar.</li>
+            </ul>
+          </div>`
+      },
+      {
+        icon: 'info',
+        title: 'Registrar nueva categoría',
+        html: `
+          <div class="text-start">
+            <ol class="mb-0">
+              <li>Escribe el <b>Nombre de la Categoría</b>.</li>
+              <li>Haz clic en <b>Registrar Categoría</b>.</li>
+            </ol>
+          </div>`,
+        onOpen: () => focusStep($('#categoria_nombre')) || focusStep($('#btn-registrar-categoria'))
+      },
+      {
+        icon: 'info',
+        title: 'Buscar categorías',
+        html: `
+          <div class="text-start">
+            <ol class="mb-0">
+              <li>Escribe el nombre en <b>Buscar categorías por nombre</b>.</li>
+              <li>Presiona <b>Buscar</b>.</li>
+            </ol>
+          </div>`,
+        onOpen: () => focusStep($('#input-buscar-categoria')) || focusStep($('#btn-buscar-categoria'))
+      },
+      {
+        icon: 'info',
+        title: 'Lista y acciones',
+        html: `
+          <div class="text-start">
+            <p>En cada fila puedes:</p>
+            <ul class="mb-2">
+              <li><b>Editar</b> el nombre de la categoría.</li>
+              <li><b>Eliminar</b> (se pedirá confirmación).</li>
+            </ul>
+            <p class="mb-0"><small>Si no ves acciones, revisa tus permisos.</small></p>
+          </div>`,
+        onOpen: () => focusStep($('#tabla-categorias'))
+      }
+    ];
+
+    const modal = Swal.mixin({
+      showCancelButton: false,
+      focusConfirm: true,
+      confirmButtonText: 'Siguiente',
+      confirmButtonColor: '#3085d6',
+      width: 600,
+      allowOutsideClick: false,
+      didOpen: () => { const s = steps[i]; if (s && typeof s.onOpen === 'function') setTimeout(s.onOpen, 50); }
+    });
+
+    for (i = 0; i < steps.length; i++) {
+      await modal.fire({
+        icon: steps[i].icon,
+        title: steps[i].title,
+        html: steps[i].html,
+        confirmButtonText: i === steps.length - 1 ? 'Entendido' : 'Siguiente'
+      });
+    }
+  });
+});
+</script>
+
+<style>
+/* Efecto de resalte */
+.help-pulse {
+  box-shadow: 0 0 0 0 rgba(49,132,253,.5);
+  animation: help-pulse 1.4s ease-out 1;
+  outline: 2px solid rgba(49,132,253,.35);
+  border-radius: 6px;
+}
+@keyframes help-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(49,132,253,.5); }
+  70%  { box-shadow: 0 0 0 12px rgba(49,132,253,0); }
+  100% { box-shadow: 0 0 0 0 rgba(49,132,253,0); }
+}
+</style>
+@endpush

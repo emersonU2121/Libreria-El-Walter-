@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class UsuarioController extends Controller
 {
@@ -125,6 +126,10 @@ class UsuarioController extends Controller
          $usuario->correo = $request->input('correo');
     }
 
+    if($request->has('rol')){
+         $usuario->rol = $request->input('rol');
+    }
+
     if ($request->filled('contraseña')) {
         $usuario->setAttribute('contraseña', bcrypt($request->input('contraseña')));
     }
@@ -182,21 +187,61 @@ class UsuarioController extends Controller
 
     //activo e inactivo usuario
     public function inactivo($id)
-    {
-        $usuario = Usuario::find($id);
-        if (!$usuario) {
-            return request()->expectsJson()
-                ? response()->json(['message' => 'Usuario no encontrado', 'status' => 404], 404)
-                : back()->with('error', 'Usuario no encontrado');
-        }
-
-        $usuario->activo = false;
-        $usuario->save();
-
+{
+    $usuario = Usuario::find($id);
+    if (!$usuario) {
         return request()->expectsJson()
-            ? response()->json(['message' => 'Usuario dado de baja', 'status' => 200], 200)
-            : back()->with('ok', 'Usuario dado de baja');
+            ? response()->json(['message' => 'Usuario no encontrado', 'status' => 404], 404)
+            : back()->with('error', 'Usuario no encontrado');
     }
+
+    // --- Identificador seguro del autenticado ---
+    $authUser = Auth::user();
+    $authId   = $authUser ? $authUser->getAuthIdentifier() : null;
+
+    // --- Evitar que el usuario logueado se dé de baja a sí mismo ---
+    if ($authId !== null && (string)$authId === (string)$usuario->getKey()) {
+        return redirect()->back()->with('alert', [
+            'type' => 'warning',
+            'title' => 'Atención',
+            'message' => 'No puedes darte de baja a ti mismo.'
+        ]);
+    }
+
+    // --- Fallback por correo ---
+    if ($authUser && isset($authUser->correo) && $authUser->correo === $usuario->correo) {
+        return redirect()->back()->with('alert', [
+            'type' => 'warning',
+            'title' => 'Atención',
+            'message' => 'No puedes darte de baja a ti mismo.'
+        ]);
+    }
+
+    // --- Verificar si es un administrador y el último activo ---
+    if ($usuario->rol === 'Administrador') {
+        $adminsActivos = Usuario::where('rol', 'Administrador')
+            ->where('activo', true)
+            ->where('idusuario', '!=', $usuario->idusuario)
+            ->count();
+
+        if ($adminsActivos === 0) {
+            // 🚫 Evitar dejar el sistema sin administradores activos
+            return redirect()->back()->with('alert', [
+                'type' => 'error',
+                'title' => 'Operación no permitida',
+                'message' => 'Debe quedar al menos un administrador activo en el sistema.'
+            ]);
+        }
+    }
+
+    // --- Desactivar usuario ---
+    $usuario->activo = false;
+    $usuario->save();
+
+    return request()->expectsJson()
+        ? response()->json(['message' => 'Usuario dado de baja', 'status' => 200], 200)
+        : back()->with('ok', 'Usuario dado de baja');
+}
 
   
     public function activo($id)

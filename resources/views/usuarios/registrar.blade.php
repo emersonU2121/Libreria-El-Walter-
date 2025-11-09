@@ -1,7 +1,7 @@
 @extends('menu')
 
 @section('contenido')
-<div class="compact-form">
+<div class="compact-form container-fluid py-4 mt-5 px-3s">
     <h1>Registro de Usuario</h1>
 
     @if(session('ok'))
@@ -230,3 +230,137 @@
 })();
 </script>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const $ = (sel) => document.querySelector(sel);
+
+  function highlight(el) {
+    if (!el) return false;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('help-pulse');
+    setTimeout(() => el.classList.remove('help-pulse'), 1400);
+    return true;
+  }
+
+  const btnAyuda = document.getElementById('btn-ayuda');
+  if (!btnAyuda) return;
+
+  btnAyuda.addEventListener('click', async () => {
+    let i = 0;
+    const steps = [
+      {
+        icon: 'question',
+        title: 'Registro de Usuario',
+        html: `
+          <div class="text-start">
+            <p>Aquí puedes <b>crear una cuenta</b> para acceder al sistema.</p>
+            <ul class="mb-0">
+              <li>Completa usuario, correo, contraseña y rol.</li>
+              <li>Luego pulsa <b>Crear Cuenta</b>.</li>
+            </ul>
+          </div>`
+      },
+      {
+        icon: 'info',
+        title: 'Usuario',
+        html: `
+          <div class="text-start">
+            <p>Escribe un <b>nombre de usuario</b> único.</p>
+            <small class="text-muted"></small>
+          </div>`,
+        onOpen: () => highlight($('#reg_usuario'))
+      },
+      {
+        icon: 'info',
+        title: 'Correo electrónico',
+        html: `
+          <div class="text-start">
+            <p>Ingresa un <b>correo válido</b> (ej: usuario@dominio.com).</p>
+            <small class="text-muted">Correo debe de ser unico, no puede repetirse.</small>
+          </div>`,
+        onOpen: () => highlight($('#reg_correo'))
+      },
+      {
+        icon: 'info',
+        title: 'Contraseña',
+        html: `
+          <div class="text-start">
+            <p>La contraseña debe tener <b>mínimo 12 caracteres</b>.</p>
+            <small class="text-muted">Recomendado: mayúsculas, minúsculas, números y símbolos.</small>
+          </div>`,
+        onOpen: () => highlight($('#reg_contrasena'))
+      },
+      {
+        icon: 'info',
+        title: 'Rol',
+        html: `
+          <div class="text-start">
+            <p>Selecciona el <b>rol</b> adecuado (Administrador o Empleado.)</p>
+            <small class="text-muted">Esto define los permisos dentro del sistema.</small>
+          </div>`,
+        onOpen: () => highlight($('#reg_rol'))
+      },
+
+      {
+        icon: 'info',
+        title: 'Cancelar',
+        html: `
+          <div class="text-start">
+            <p>El boton <b>Cancelar</b> permite salir del registro sin guardar cambios.</p>
+            <p>Regresas a la tabla de usuarios.</p>
+          </div>`,
+        onOpen: () => highlight($('#reg_rol'))
+      },
+      
+      {
+        icon: 'success',
+        title: 'Crear Cuenta',
+        html: `
+          <div class="text-start">
+            <p>Cuando todo esté correcto, pulsa <b>Crear Cuenta</b>.</p>
+          </div>`,
+        onOpen: () => highlight($('#btn-crear-usuario'))
+      }
+    ];
+
+    const modal = Swal.mixin({
+      showCancelButton: false,
+      focusConfirm: true,
+      confirmButtonText: 'Siguiente',
+      confirmButtonColor: '#3085d6',
+      width: 600,
+      allowOutsideClick: false,
+      didOpen: () => { const s = steps[i]; if (s && typeof s.onOpen === 'function') setTimeout(s.onOpen, 50); }
+    });
+
+    for (i = 0; i < steps.length; i++) {
+      await modal.fire({
+        icon: steps[i].icon,
+        title: steps[i].title,
+        html: steps[i].html,
+        confirmButtonText: i === steps.length - 1 ? 'Entendido' : 'Siguiente'
+      });
+    }
+  });
+});
+</script>
+
+<style>
+/* Resalte del elemento del paso */
+.help-pulse {
+  box-shadow: 0 0 0 0 rgba(49,132,253,.5);
+  animation: help-pulse 1.4s ease-out 1;
+  outline: 2px solid rgba(49,132,253,.35);
+  border-radius: 6px;
+}
+@keyframes help-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(49,132,253,.5); }
+  70%  { box-shadow: 0 0 0 12px rgba(49,132,253,0); }
+  100% { box-shadow: 0 0 0 0 rgba(49,132,253,0); }
+}
+</style>
+@endpush
+

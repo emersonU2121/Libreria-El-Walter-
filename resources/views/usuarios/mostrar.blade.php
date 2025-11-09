@@ -107,6 +107,8 @@
 @include('usuarios._modal_editar')
 @include('usuarios._modal_baja')
 
+
+
 @endsection
 
 
@@ -198,4 +200,193 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
+@endpush
+
+@push('scripts')
+    {{-- SweetAlert2 --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    @push('scripts')
+    {{-- SweetAlert2 --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    {{-- Caso con estructura "alert" (array con type/title/message) --}}
+    @if(session('alert'))
+        <script>
+        (function () {
+            const data = @json(session('alert'));
+            Swal.fire({
+                icon: data.type || 'info',
+                title: data.title || 'Atención',
+                text: data.message || '',
+                confirmButtonText: 'Aceptar',
+                allowOutsideClick: false,
+                confirmButtonColor: '#3085d6'
+            });
+        })();
+        </script>
+    @endif
+
+    {{-- Warning simple (string) --}}
+    @if(session('warning') && !session('alert'))
+        <script>
+        Swal.fire({
+            icon: 'warning',
+            title: 'Atención',
+            text: "{{ session('warning') }}", // texto plano con comillas
+            confirmButtonText: 'Aceptar',
+            allowOutsideClick: false,
+            confirmButtonColor: '#f0ad4e'
+        });
+        </script>
+    @endif
+
+    {{-- Ok / success simple (string) --}}
+    @if(session('ok') && !session('alert'))
+        <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: "{{ session('ok') }}",
+            confirmButtonText: 'Aceptar',
+            allowOutsideClick: false,
+            confirmButtonColor: '#28a745'
+        });
+        </script>
+    @endif
+
+    {{-- Error simple (string) --}}
+    @if(session('error') && !session('alert'))
+        <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: "{{ session('error') }}",
+            confirmButtonText: 'Aceptar',
+            allowOutsideClick: false,
+            confirmButtonColor: '#d33'
+        });
+        </script>
+    @endif
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const $ = (sel) => document.querySelector(sel);
+
+  // Devuelve el primer botón de una clase dentro de la tabla
+  function firstInTable(selector) {
+    const table = $('#tabla-usuarios') || document;
+    return table.querySelector(selector);
+  }
+
+  function highlight(el) {
+    if (!el) return false;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('help-pulse');
+    setTimeout(() => el.classList.remove('help-pulse'), 1400);
+    return true;
+  }
+
+  const btnAyuda = $('#btn-ayuda');
+  if (!btnAyuda) return;
+
+  btnAyuda.addEventListener('click', async () => {
+    let i = 0;
+    const steps = [
+      {
+        icon: 'question',
+        title: 'Lista de Usuarios',
+        html: `
+          <div class="text-start">
+            <p>Aquí puedes <b>editar, desactivar y reactivar</b> usuarios.</p>
+            <ul class="mb-0">
+              <li>No puedes <b>darte de baja a ti mismo</b>.</li>
+              <li>Si un usuario es <b>Administrador</b>, no se permite dejar <b>0 admins activos</b>.</li>
+            </ul>
+          </div>`
+      },
+      {
+        icon: 'info',
+        title: 'Registrar nuevo usuario',
+        html: `
+          <div class="text-start">
+            <p>Usa este botón para abrir el formulario de registro.</p>
+          </div>`,
+        onOpen: () => highlight($('#btn-registrar-usuario'))
+      },
+      {
+        icon: 'info',
+        title: 'Editar usuario',
+        html: `
+          <div class="text-start">
+            <p>En cada fila, <b>Editar</b> abre el modal para actualizar datos.</p>
+          </div>`,
+        onOpen: () => highlight(firstInTable('.btn-open-edit'))
+      },
+      {
+        icon: 'warning',
+        title: 'Dar baja / Reactivar',
+        html: `
+          <div class="text-start">
+            <ul class="mb-0">
+              <li><b>Dar baja</b> cambia el estado a Inactivo.</li>
+              <li><b>Reactivar</b> vuelve a Activo.</li>
+              <li>No puedes <b>darte de baja</b> a ti mismo.</li>
+              <li>No se permite desactivar al <b>último Administrador activo</b>.</li>
+            </ul>
+          </div>`,
+        onOpen: () => highlight(firstInTable('.btn-open-baja'))
+      },
+      {
+        icon: 'info',
+        title: 'Estados',
+        html: `
+          <div class="text-start">
+            <p>La columna <b>Estado</b> muestra si el usuario está Activo o Inactivo.</p>
+          </div>`,
+        onOpen: () => highlight($('#tabla-usuarios'))
+      }
+    ];
+
+    const modal = Swal.mixin({
+      showCancelButton: false,
+      focusConfirm: true,
+      confirmButtonText: 'Siguiente',
+      confirmButtonColor: '#3085d6',
+      width: 600,
+      allowOutsideClick: false,
+      didOpen: () => {
+        const s = steps[i];
+        if (s && typeof s.onOpen === 'function') setTimeout(s.onOpen, 50);
+      }
+    });
+
+    for (i = 0; i < steps.length; i++) {
+      await modal.fire({
+        icon: steps[i].icon,
+        title: steps[i].title,
+        html: steps[i].html,
+        confirmButtonText: i === steps.length - 1 ? 'Entendido' : 'Siguiente'
+      });
+    }
+  });
+});
+</script>
+
+<style>
+/* Efecto de resalte */
+.help-pulse {
+  box-shadow: 0 0 0 0 rgba(49,132,253,.5);
+  animation: help-pulse 1.4s ease-out 1;
+  outline: 2px solid rgba(49,132,253,.35);
+  border-radius: 6px;
+}
+@keyframes help-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(49,132,253,.5); }
+  70%  { box-shadow: 0 0 0 12px rgba(49,132,253,0); }
+  100% { box-shadow: 0 0 0 0 rgba(49,132,253,0); }
+}
+</style>
 @endpush

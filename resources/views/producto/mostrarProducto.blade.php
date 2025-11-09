@@ -46,7 +46,7 @@
                         <input type="text" 
                                name="buscar" 
                                class="form-control" 
-                               placeholder="Buscar productos por nombre, ID, marca, categoría..." 
+                               placeholder="Buscar productos por nombre, codigo, marca, categoría..." 
                                value="{{ request('buscar') }}"
                                aria-label="Buscar productos">
                         <button type="submit" class="btn btn-primary">
@@ -75,7 +75,7 @@
                     <table class="table table-hover table-sm align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th class="text-dark">Identificador</th>
+                                <th class="text-dark">Codigo</th>
                                 <th class="text-dark">Imagen</th>
                                 <th class="text-dark">Nombre</th>
                                 <th class="text-dark">Precio de compra</th>
@@ -212,3 +212,121 @@
 <script src="{{ asset('js/producto/mostrarProducto.js') }}"></script>
 @endpush
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const $ = sel => document.querySelector(sel);
+
+  function highlight(el) {
+    if (!el) return false;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('help-pulse');
+    setTimeout(() => el.classList.remove('help-pulse'), 1400);
+    return true;
+  }
+
+  function firstInTable(selector) {
+    const t = $('#tabla-productos') || document;
+    return t.querySelector(selector);
+  }
+
+  const btnAyuda = $('#btn-ayuda');
+  if (!btnAyuda) return;
+
+  btnAyuda.addEventListener('click', async () => {
+    let i = 0;
+    const steps = [
+      {
+        icon: 'question',
+        title: 'Lista de Productos',
+        html: `
+          <div class="text-start">
+            <p>Desde aquí puedes acceder a <b>registrar</b> productos, <b>buscar</b>, ver <b>stock bajo</b>,
+            y ejecutar <b>acciones</b> por producto (Editar / Dar de baja).</p>
+          </div>`
+      },
+      {
+        icon: 'info',
+        title: 'Registrar Producto',
+        html: `<div class="text-start"><p>Usa este botón para entrar al formulario para registrar un nuevo producto.</p></div>`,
+        onOpen: () => highlight($('#btn-registrar-producto'))
+      },
+      {
+        icon: 'info',
+        title: 'Stock bajo (PDF)',
+        html: `<div class="text-start"><p>Descarga un reporte PDF con productos cuyo stock sea menor a 5.</p></div>`,
+        onOpen: () => highlight($('#btn-stock-bajo-pdf'))
+      },
+      {
+        icon: 'info',
+        title: 'Buscador',
+        html: `<div class="text-start">
+                 <p>Busca por <b>nombre, codigo de barras, marca o categoría</b> y presiona <b>Buscar</b>.</p>
+               </div>`,
+        onOpen: () => highlight($('#input-buscar-producto')) || highlight($('#btn-buscar-producto'))
+      },
+      {
+        icon: 'info',
+        title: 'Tabla de productos',
+        html: `<div class="text-start">
+                 <p>Revisa codigos de barras, imagen, precios, existencias, estado, marca, categoría y acciones.</p>
+                 <small class="text-muted">El indicadaor <b>Bajo</b> indica pocas existencias; <b>disponible</b> indica producto activo en venta.</small>
+               </div>`,
+        onOpen: () => highlight($('#tabla-productos'))
+      },
+      {
+        icon: 'info',
+        title: 'Editar / Dar de baja',
+        html: `<div class="text-start">
+                 <ul class="mb-0">
+                   <li><b>Editar</b>: modifica datos del producto.</li>
+                   <li><b>Dar de baja</b>: inhabilita el producto para ventas (no lo borra).</li>
+                 </ul>
+               </div>`,
+        onOpen: () => highlight(firstInTable('.btn-open-edit')) || highlight(firstInTable('.btn-open-baja'))
+      }
+    ];
+
+    const modal = Swal.mixin({
+      showCancelButton: false,
+      focusConfirm: true,
+      confirmButtonText: 'Siguiente',
+      confirmButtonColor: '#3085d6',
+      width: 600,
+      allowOutsideClick: false,
+      didOpen: () => {
+        const s = steps[i];
+        if (s && typeof s.onOpen === 'function') setTimeout(s.onOpen, 50);
+      }
+    });
+
+    for (i = 0; i < steps.length; i++) {
+      await modal.fire({
+        icon: steps[i].icon,
+        title: steps[i].title,
+        html: steps[i].html,
+        confirmButtonText: i === steps.length - 1 ? 'Entendido' : 'Siguiente'
+      });
+    }
+  });
+});
+</script>
+
+<style>
+/* Efecto de resalte */
+.help-pulse {
+  box-shadow: 0 0 0 0 rgba(49,132,253,.5);
+  animation: help-pulse 1.4s ease-out 1;
+  outline: 2px solid rgba(49,132,253,.35);
+  border-radius: 6px;
+}
+@keyframes help-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(49,132,253,.5); }
+  70%  { box-shadow: 0 0 0 12px rgba(49,132,253,0); }
+  100% { box-shadow: 0 0 0 0 rgba(49,132,253,0); }
+}
+</style>
+@endpush
+

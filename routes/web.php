@@ -17,6 +17,7 @@ use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\CompraReporteController;
 use App\Http\Controllers\ReporteProductoController;
+use App\Http\Controllers\VentaController;
 
 
 
@@ -100,20 +101,20 @@ Route::put('/productos/{id}/activo',     [ProductoController::class, 'activo'])-
 // ====== MARCAS ======
 
 // PRIMERO las rutas ESPECÍFICAS (fijas)
-Route::get('/marcas/registrar', [MarcaController::class, 'create'])->name('marcas.registrar');
-Route::get('/marcas/mostrar', [MarcaController::class, 'mostrar'])->name('marcas.mostrar'); // ← ESTA PRIMERO
+Route::get('/marcas/registrar', 'App\Http\Controllers\MarcaController@create')->name('marcas.registrar');
+Route::get('/marcas/mostrar', 'App\Http\Controllers\MarcaController@mostrar')->name('marcas.mostrar'); // ← ESTA PRIMERO
 
 // LUEGO las rutas con PARÁMETROS (variables)
-Route::get('/marcas/{id}', [MarcaController::class, 'show'])
+Route::get('/marcas/{id}', 'App\Http\Controllers\MarcaController@show')
     ->where('id', '[0-9]+') // Solo números
-    ->name('marcas.show');; // ← ESTA DESPUÉS
+    ->name('marcas.show'); // ← ESTA DESPUÉS
 
 // Otras rutas de marcas
-Route::get('/marcas', [MarcaController::class, 'index'])->name('marcas.index');
-Route::post('/marcas', [MarcaController::class, 'store'])->name('marcas.store');
-Route::put('/marcas/{id}', [MarcaController::class, 'update'])->name('marcas.update');
-Route::delete('/marcas/{id}', [MarcaController::class, 'destroy'])->name('marcas.destroy');
-Route::post('/marcas/validar', [MarcaController::class, 'validarMarca'])->name('marcas.validar');
+Route::get('/marcas', 'App\Http\Controllers\MarcaController@index')->name('marcas.index');
+Route::post('/marcas', 'App\Http\Controllers\MarcaController@store')->name('marcas.store');
+Route::put('/marcas/{id}', 'App\Http\Controllers\MarcaController@update')->name('marcas.update');
+Route::delete('/marcas/{id}', 'App\Http\Controllers\MarcaController@destroy')->name('marcas.destroy');
+Route::post('/marcas/validar', 'App\Http\Controllers\MarcaController@validarMarca')->name('marcas.validar');
 
 // ====== CATEGORIAS ======
 // routes/web.php
@@ -183,3 +184,8 @@ Route::get('/compras/{compra}/reporte/pdf', [CompraReporteController::class, 'de
 
      Route::get('/productos/reporte/stock-bajo', [ReporteProductoController::class, 'stockBajoPdf'])
      ->name('productos.reporte.stock_bajo.pdf');
+
+     // ====== VENTAS (PUNTO DE VENTA) ======
+Route::get('/ventas/registrar', [VentaController::class, 'create'])->name('ventas.registrar');
+Route::post('/ventas/registrar', [VentaController::class, 'store'])->name('ventas.store');
+Route::get('/ventas/mostrar', [VentaController::class, 'mostrar'])->name('ventas.mostrar');

@@ -207,21 +207,105 @@
     </div>
 </div>
 
-{{-- ... el resto de tus modales se queda igual ... --}}
-
-{{-- modal cancelar --}}
 <div class="modal fade" id="modalConfirmarCancelacion" tabindex="-1" aria-labelledby="modalConfirmarCancelacionLabel" aria-hidden="true">
-    {{-- ... lo mismo que tenías ... --}}
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-sm">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="modalConfirmarCancelacionLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmar cancelación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="fw-semibold mb-3 text-dark">
+                    ¿Deseas cancelar la operación actual? Todos los campos y productos agregados se eliminarán.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, volver</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarCancelacion">Sí, cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-{{-- modal aviso validacion --}}
 <div class="modal fade" id="modalAvisoValidacion" tabindex="-1" aria-labelledby="modalAvisoValidacionLabel" aria-hidden="true">
-    {{-- ... lo mismo que tenías ... --}}
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-sm">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="modalAvisoValidacionLabel">
+                    <i class="fas fa-exclamation-circle me-2"></i>Validación de compra
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-dark" id="avisoMsg">
+                Debes agregar al menos un producto para registrar la compra.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+            </div>
+        </div>
+    </div>
 </div>
 
-{{-- modal lista compra --}}
 <div class="modal fade" id="modalListaDeCompra" tabindex="-1" aria-labelledby="modalListaDeCompraLabel" aria-hidden="true">
-    {{-- ... lo mismo que tenías ... --}}
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="{{ route('productos.listaDeCompraPdf') }}" method="POST" target="_blank">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalListaDeCompraLabel">Crear Lista de Compra</h5>
+                    <input type="text" class="form-control ms-3" id="filtro-lista-compra-modal" placeholder="Buscar por nombre...">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="lista-compra-modal-cards" class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-3">
+                        
+                        @forelse($productosBajoStock as $producto)
+                        <div class="col producto-card-lista">
+                            <div class="card h-100 card-lista-compra">
+                                <img src="{{ $producto->imagen ? asset('storage/'.$producto->imagen) : asset('images/no-image.png') }}" 
+                                     class="card-img-top" alt="{{ $producto->nombre }}" style="height: 180px; object-fit: cover;">
+                                
+                                <div class="card-body">
+                                    <h6 class="card-title fw-semibold text-dark">{{ $producto->nombre }}</h6>
+                                    <p class="card-text small text-danger">
+                                        <strong>Stock Actual: {{ $producto->stock }}</strong>
+                                    </p>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <div class="form-check">
+                                        <input class="form-check-input check-lista-producto" 
+                                               type="checkbox" 
+                                               name="producto_ids[]"
+                                               value="{{ $producto->idproducto }}" 
+                                               id="check-lista-{{ $producto->idproducto }}">
+                                        <label class="form-check-label fw-semibold" for="check-lista-{{ $producto->idproducto }}">
+                                            Seleccionar
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="col-12">
+                            <div class="alert alert-success text-center">
+                                No hay productos con bajo stock (stock > 0).
+                            </div>
+                        </div>
+                        @endforelse
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary" id="btn-generar-lista-pdf">
+                        <i class="fas fa-print me-2"></i>Generar lista de compra
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <button type="button" 
@@ -375,5 +459,134 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('beforeunload', detener);
 });
 </script>
+@endpush
+
+
+@push('scripts')
+    <script src="{{ asset('js/compras/registrar.js') }}"></script>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const $ = (s) => document.querySelector(s);
+
+  function highlight(el) {
+    if (!el) return false;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('help-pulse');
+    setTimeout(() => el.classList.remove('help-pulse'), 1400);
+    return true;
+  }
+
+  const btnAyuda = $('#btn-ayuda');
+  if (!btnAyuda) return;
+
+  btnAyuda.addEventListener('click', async () => {
+    let i = 0;
+    const steps = [
+      {
+        icon: 'question',
+        title: 'Registrar Nueva Compra',
+        html: `<div class="text-start">
+                <p>Completa los productos adquiridos y <b>registra la compra</b>. Puedes generar <b>PDF</b> o ver el <b>historial</b>.</p>
+               </div>`,
+        onOpen: () => highlight($('#btn-compra-pdf')) || highlight($('#btn-historial-compras'))
+      },
+      {
+        icon: 'info',
+        title: 'Concepto General',
+        html: `<div class="text-start">
+                 <p>Describe el objetivo de la compra (ej. <i>Pedido semanal a proveedor X</i>).</p>
+               </div>`,
+        onOpen: () => highlight($('#compra_concepto'))
+      },
+      {
+        icon: 'info',
+        title: 'Ítems de Compra',
+        html: `<div class="text-start">
+                 <ul class="mb-0">
+                   <li><b>Producto</b>:Dar click a <b>Buscar Producto</b> y abrira una ventana para seleccionar el producto.</li>
+                   <li><b>Origen</b>: Lugar donde se compro el producto</li>
+                   <li><b>Unidades</b> y <b>Precio Compra</b>: cantidades y costo.</li>
+                   <li><b>P. Unitario</b> / <b>Precio Total</b>: se calculan automáticamente.</li>
+                 </ul>
+               </div>`,
+        onOpen: () => highlight($('#item_producto')) || highlight($('#btn-buscar-producto')) ||
+                      highlight($('#item_origen')) || highlight($('#item_unidades')) ||
+                      highlight($('#item_precio_compra')) || highlight($('#item_precio_unitario')) ||
+                      highlight($('#item_precio_total'))
+      },
+      {
+        icon: 'info',
+        title: 'Agregar producto',
+        html: `<div class="text-start"><p>Usa este botón para añadir el ítem a la compra.</p></div>`,
+        onOpen: () => highlight($('#btn-agregar-item'))
+      },
+      {
+        icon: 'info',
+        title: 'Total de la compra',
+        html: `<div class="text-start">
+                 <p>El <b>Total</b> se actualiza con cada ítem agregado o editado.</p>
+               </div>`,
+        onOpen: () => highlight($('#compra_total'))
+      },
+      {
+        icon: 'info',
+        title: 'Eliminar producto de la compra',
+        html: `<div class="text-start">
+                 <p>El icono rojo en la parte superior derecha del formulario permite quitar un producto de la compra.</p>
+               </div>`
+      },
+      {
+        icon: 'warning',
+        title: 'Cancelar / Registrar',
+        html: `<div class="text-start">
+                 <ul class="mb-0">
+                   <li><b>Cancelar Operación</b>: vuelve sin guardar.</li>
+                   <li><b>Registrar Compra</b>: guarda todos los ítems y actualiza inventario según tu lógica.</li>
+                 </ul>
+               </div>`,
+        onOpen: () => highlight($('#btn-registrar-compra')) || highlight($('#btn-cancelar-compra'))
+      }
+    ];
+
+    const modal = Swal.mixin({
+      showCancelButton: false,
+      focusConfirm: true,
+      confirmButtonText: 'Siguiente',
+      confirmButtonColor: '#3085d6',
+      width: 600,
+      allowOutsideClick: false,
+      didOpen: () => { const s = steps[i]; if (s && typeof s.onOpen === 'function') setTimeout(s.onOpen, 50); }
+    });
+
+    for (i = 0; i < steps.length; i++) {
+      await modal.fire({
+        icon: steps[i].icon,
+        title: steps[i].title,
+        html: steps[i].html,
+        confirmButtonText: i === steps.length - 1 ? 'Entendido' : 'Siguiente'
+      });
+    }
+  });
+});
+</script>
+
+<style>
+/* Resalte visual */
+.help-pulse {
+  box-shadow: 0 0 0 0 rgba(49,132,253,.5);
+  animation: help-pulse 1.4s ease-out 1;
+  outline: 2px solid rgba(49,132,253,.35);
+  border-radius: 6px;
+}
+@keyframes help-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(49,132,253,.5); }
+  70%  { box-shadow: 0 0 0 12px rgba(49,132,253,0); }
+  100% { box-shadow: 0 0 0 0 rgba(49,132,253,0); }
+}
+</style>
 @endpush
 

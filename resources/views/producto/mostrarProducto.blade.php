@@ -207,6 +207,24 @@
 }
 </style>
 
+<button type="button" 
+        class="btn btn-primary shadow" 
+        id="btn-ayuda" 
+        style="
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 1050;
+            width: 50px;         
+            height: 50px;        
+            border-radius: 50%;  
+            font-size: 1.5rem;  
+            font-weight: bold;   
+            padding: 0;          
+        ">
+    ?
+</button>
+
 @endsection
 
 {{-- SCRIPT del lector de código de barras --}}
@@ -331,13 +349,6 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', () => {
   const $ = sel => document.querySelector(sel);
 
-  const btnAyuda = document.createElement('button');
-  btnAyuda.id = 'btn-ayuda-productos';
-  btnAyuda.className = 'btn btn-info rounded-circle position-fixed bottom-0 end-0 m-4';
-  btnAyuda.style.zIndex = '1080';
-  btnAyuda.innerHTML = '<i class="fas fa-question"></i>';
-  document.body.appendChild(btnAyuda);
-
   function highlight(el) {
     if (!el) return false;
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -346,12 +357,22 @@ document.addEventListener('DOMContentLoaded', () => {
     return true;
   }
 
+  function firstInTable(selector) {
+    const t = $('#tabla-productos') || document;
+    return t.querySelector(selector);
+  }
+
+  const btnAyuda = $('#btn-ayuda');
+  if (!btnAyuda) return;
+
   btnAyuda.addEventListener('click', async () => {
+    let i = 0;
     const steps = [
       {
         icon: 'question',
         title: 'Lista de Productos',
-        html: `<div class="text-start">
+        html: `
+          <div class="text-start">
             <p>Desde aquí puedes acceder a <b>registrar</b> productos, <b>buscar</b>, ver <b>stock bajo</b>,
             y ejecutar <b>acciones</b> por producto (Editar / Dar de baja).</p>
           </div>`
@@ -359,20 +380,63 @@ document.addEventListener('DOMContentLoaded', () => {
       {
         icon: 'info',
         title: 'Registrar Producto',
-        html: `<div class="text-start"><p>Usa este botón para ir al formulario para registrar un nuevo producto.</p></div>`,
-        didOpen: () => highlight($('#btn-registrar-producto'))
+        html: `<div class="text-start"><p>Usa este botón para entrar al formulario para registrar un nuevo producto.</p></div>`,
+        onOpen: () => highlight($('#btn-registrar-producto'))
       },
       {
         icon: 'info',
         title: 'Stock bajo (PDF)',
         html: `<div class="text-start"><p>Descarga un reporte PDF con productos cuyo stock sea menor a 5.</p></div>`,
-        didOpen: () => highlight($('#btn-stock-bajo-pdf'))
+        onOpen: () => highlight($('#btn-stock-bajo-pdf'))
+      },
+      {
+        icon: 'info',
+        title: 'Buscador',
+        html: `<div class="text-start">
+                 <p>Busca por <b>nombre, codigo de barras, marca o categoría</b> y presiona <b>Buscar</b>.</p>
+               </div>`,
+        onOpen: () => highlight($('#input-buscar-producto')) || highlight($('#btn-buscar-producto'))
+      },
+      {
+        icon: 'info',
+        title: 'Tabla de productos',
+        html: `<div class="text-start">
+                 <p>Revisa codigos de barras, imagen, precios, existencias, estado, marca, categoría y acciones.</p>
+                 <small class="text-muted">El indicadaor <b>Bajo</b> indica pocas existencias; <b>disponible</b> indica producto activo en venta.</small>
+               </div>`,
+        onOpen: () => highlight($('#tabla-productos'))
+      },
+      {
+        icon: 'info',
+        title: 'Editar / Dar de baja',
+        html: `<div class="text-start">
+                 <ul class="mb-0">
+                   <li><b>Editar</b>: modifica datos del producto.</li>
+                   <li><b>Dar de baja</b>: inhabilita el producto para ventas (no lo borra).</li>
+                 </ul>
+               </div>`,
+        onOpen: () => highlight(firstInTable('.btn-open-edit')) || highlight(firstInTable('.btn-open-baja'))
       }
     ];
 
-    for (let i = 0; i < steps.length; i++) {
-      await Swal.fire({
-        ...steps[i],
+    const modal = Swal.mixin({
+      showCancelButton: false,
+      focusConfirm: true,
+      confirmButtonText: 'Siguiente',
+      confirmButtonColor: '#3085d6',
+      width: 600,
+      allowOutsideClick: false,
+      didOpen: () => {
+        const s = steps[i];
+        if (s && typeof s.onOpen === 'function') setTimeout(s.onOpen, 50);
+      }
+    });
+
+    for (i = 0; i < steps.length; i++) {
+      await modal.fire({
+        icon: steps[i].icon,
+        title: steps[i].title,
+        html: steps[i].html,
         confirmButtonText: i === steps.length - 1 ? 'Entendido' : 'Siguiente'
       });
     }
@@ -381,6 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <style>
+/* Efecto de resalte */
 .help-pulse {
   box-shadow: 0 0 0 0 rgba(49,132,253,.5);
   animation: help-pulse 1.4s ease-out 1;

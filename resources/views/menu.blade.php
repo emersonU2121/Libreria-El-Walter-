@@ -169,5 +169,4 @@
 <footer class="text-center mt-5 py-3 footer-transparent">
     <p>&copy; {{ date('Y') }} Universidad Nacional de El Salvador. Todos los derechos reservados.</p>
 </footer>
-
 </html>

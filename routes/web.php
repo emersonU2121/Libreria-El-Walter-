@@ -189,3 +189,6 @@ Route::get('/compras/{compra}/reporte/pdf', [CompraReporteController::class, 'de
 Route::get('/ventas/registrar', [VentaController::class, 'create'])->name('ventas.registrar');
 Route::post('/ventas/registrar', [VentaController::class, 'store'])->name('ventas.store');
 Route::get('/ventas/mostrar', [VentaController::class, 'mostrar'])->name('ventas.mostrar');
+Route::get('/ventas/{idventa}', [VentaController::class, 'show'])->name('ventas.detalles');
+Route::get('/ventas/{idventa}/pdf', [\App\Http\Controllers\VentaController::class, 'pdf'])->name('ventas.detalle.pdf');
+Route::get('/ventas/pdf/{id}', [VentaController::class, 'pdf'])->name('ventas.detalle.pdf');

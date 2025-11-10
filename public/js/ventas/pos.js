@@ -77,13 +77,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // 6. Botón Cancelar Venta
-    btnCancelarVenta.addEventListener('click', () => {
-        if (confirm('¿Estás seguro de que deseas cancelar la venta y vaciar el carrito?')) {
+    btnCancelarVenta.addEventListener('click', async () => {
+    Swal.fire({
+        title: '¿Cancelar venta?',
+        text: 'Se eliminarán todos los productos del carrito y se reiniciará la página.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, cancelar',
+        cancelButtonText: 'No, continuar',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
             carrito = [];
             renderizarCarrito();
-            renderizarProductos(allProducts); // Restaura el stock visual
+            renderizarProductos(allProducts);
+            
+            // Pequeña alerta de confirmación
+            Swal.fire({
+                icon: 'success',
+                title: 'Venta cancelada',
+                text: 'La página se reiniciará.',
+                showConfirmButton: false,
+                timer: 1200
+            });
+
+            // Recarga la página después del mensaje
+            setTimeout(() => window.location.reload(), 1300);
         }
     });
+});
 
 
     // --- FUNCIONES PRINCIPALES ---
@@ -285,15 +309,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
 
-            if (!response.ok) {
-                // Si el servidor devuelve un error (ej. 422 por stock insuficiente)
-                throw new Error(data.message || 'Ocurrió un error en el servidor.');
-            }
+           if (data.ok) {
+    new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_9a8d8c3c12.mp3').play();
+    
+    Swal.fire({
+      icon: 'success',
+      title: '¡Venta registrada!',
+      html: `
+        <p>La factura se generó correctamente.</p>
+        <p><b>No. de Factura:</b> ${data.numero_factura || '—'}</p>
+        <p><b>Total:</b> $${parseFloat(data.total || 0).toFixed(2)}</p>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Ver factura',
+      cancelButtonText: 'Cerrar',
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+    }).then((result) => {
+      if (result.isConfirmed && data.pdf) {
+        window.open(data.pdf, '_blank');
+      }
+      // ✅ Refrescar la página después de cerrar el SweetAlert
+  setTimeout(() => {
+    window.location.reload();
+  }, 500);
+    });
 
-            // Éxito
-            alert(data.message); // Usamos un alert simple para el éxito
-            window.location.href = data.redirect_url; // Redirigir al historial
-
+    
+    carrito = [];
+    renderizarCarrito();
+    renderizarProductos(allProducts);
+    
+    btnRegistrarVenta.disabled = false;
+    btnRegistrarVenta.innerHTML = '<i class="fas fa-check-circle me-2"></i>Registrar Venta';
+} else {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: data.message || 'No se pudo registrar la venta',
+    });
+}
         } catch (error) {
             // Captura errores de red o errores lanzados desde el servidor
             mostrarErrorStock(error.message);

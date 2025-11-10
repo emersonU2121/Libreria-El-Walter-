@@ -19,7 +19,8 @@ class Venta extends Model
     protected $fillable = [
         'idusuario',
         'fecha',
-        'total'
+        'total',
+        'numero_factura'
 
     ];
 
@@ -32,7 +33,4 @@ class Venta extends Model
     {
         return $this->hasMany(DetalleVenta::class, 'idventa', 'idventa');
     }
-
-    
-    //
 }

@@ -28,6 +28,21 @@
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-search"></i></span>
                         <input type="text" id="search-bar" class="form-control" placeholder="Buscar producto por nombre...">
+                    <button type="button" class="btn btn-outline-info" id="btn-camara-pos" title="Buscar por código">
+                            <i class="fas fa-barcode me-1"></i> Buscar por código
+                        </button>
+                          <button type="button" class="btn btn-outline-secondary" id="btn-limpiar-pos" title="Limpiar búsqueda">
+        <i class="fas fa-eraser me-1"></i> Limpiar
+    </button>
+                      </div>
+                      <div id="contenedor-camara-pos" class="mt-2" style="display:none;">
+                        <video id="video-pos"
+                            style="width:50%; height:200px; object-fit:cover; border:1px solid #ddd; border-radius:6px; background:#000;"
+                            autoplay muted playsinline></video>
+                        <div class="small text-muted mt-1">Enfoca el código de barras...</div>
+                        <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="btn-detener-pos">
+                            Detener cámara
+                        </button>
                     </div>
                 </div>
                 <!-- Lista de Productos -->
@@ -275,4 +290,158 @@ document.addEventListener('DOMContentLoaded', () => {
   100% { box-shadow: 0 0 0 0 rgba(49,132,253,0); }
 }
 </style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnCamara  = document.getElementById('btn-camara-pos');
+    const cont       = document.getElementById('contenedor-camara-pos');
+    const video      = document.getElementById('video-pos');
+    const btnDetener = document.getElementById('btn-detener-pos');
+    const inputSearch = document.getElementById('search-bar');
+    const productList = document.getElementById('product-list');
+    const btnLimpiar = document.getElementById('btn-limpiar-pos');
+
+
+if (btnLimpiar) {
+    btnLimpiar.addEventListener('click', function() {
+        // limpiar input
+        if (inputSearch) {
+            inputSearch.value = '';
+            inputSearch.dispatchEvent(new Event('input')); // refresca el filtro
+        }
+
+        // detener cámara si está activa
+        if (cont && cont.style.display !== 'none') {
+            detener();
+        }
+
+        // opcional: mostrar todos los productos si tu JS del POS lo soporta
+        if (typeof window.posMostrarTodos === 'function') {
+            window.posMostrarTodos();
+        }
+    });
+}
+    let stream = null;
+    let yaDetecto = false;
+
+    function detener() {
+        yaDetecto = false;
+        if (typeof Quagga !== 'undefined') {
+            Quagga.stop();
+        }
+        if (stream) {
+            stream.getTracks().forEach(t => t.stop());
+            stream = null;
+        }
+        if (cont) cont.style.display = 'none';
+        if (video) video.srcObject = null;
+    }
+
+    // intenta agregar al carrito según el ID (porque en tu caso el idproducto ES el código)
+    function intentarAgregarPorId(code) {
+        // 1) si tu JS del POS expone una función global, la usamos
+        if (typeof window.posAgregarProductoPorId === 'function') {
+            window.posAgregarProductoPorId(code);
+            return true;
+        }
+
+        // 2) si tus tarjetas tienen data-idproducto, intentamos clic
+        if (productList) {
+            const cardBtn = productList.querySelector('[data-idproducto="'+code+'"], [data-id="'+code+'"]');
+            if (cardBtn) {
+                cardBtn.click();
+                return true;
+            }
+        }
+
+        // 3) si no lo encontró, al menos dejamos el código en el buscador
+        if (inputSearch) {
+            inputSearch.value = code;
+            inputSearch.dispatchEvent(new Event('input'));
+        }
+        return false;
+    }
+
+    function iniciarQuagga() {
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: video,
+                constraints: {
+                    facingMode: "user",
+                    width: 1280,
+                    height: 720
+                }
+            },
+            decoder: {
+                readers: [
+                    "code_128_reader",
+                    "ean_reader",
+                    "ean_8_reader",
+                    "code_39_reader",
+                    "upc_reader",
+                    "upc_e_reader"
+                ]
+            },
+            locator: {
+                patchSize: "medium",
+                halfSample: true
+            },
+            locate: true,
+            numOfWorkers: navigator.hardwareConcurrency || 2
+        }, function(err) {
+            if (err) {
+                console.error(err);
+                detener();
+                return;
+            }
+            Quagga.start();
+        });
+
+        Quagga.onDetected(function(result) {
+            if (yaDetecto) return;
+            if (result && result.codeResult && result.codeResult.code) {
+                let code = result.codeResult.code.trim();
+
+                // mismo fix: si tu lector agrega 0 al inicio, se lo quitamos
+                if (code.startsWith('0')) {
+                    code = code.substring(1);
+                }
+
+                intentarAgregarPorId(code);
+
+                // apagamos la cámara
+                setTimeout(detener, 300);
+                yaDetecto = true;
+            }
+        });
+    }
+
+    if (btnCamara) {
+        btnCamara.addEventListener('click', async function() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                cont.style.display = 'block';
+                iniciarQuagga();
+            } catch (e) {
+                alert('No se pudo acceder a la cámara');
+            }
+        });
+    }
+
+    if (btnDetener) {
+        btnDetener.addEventListener('click', detener);
+    }
+
+    window.addEventListener('beforeunload', detener);
+});
+
+
+
+</script>
 @endpush

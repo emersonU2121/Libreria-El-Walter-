@@ -177,6 +177,9 @@ Route::prefix('reportes')->group(function () {
     Route::get('/marcas', [ReporteController::class, 'marcasReporte'])->name('reportes.marcas');
     Route::get('/productos', [ReporteController::class, 'productosReporte'])->name('reportes.productos');
     Route::get('/usuarios', [ReporteController::class, 'usuariosReporte'])->name('reportes.usuarios');
+ Route::get('/ventas-mes', [ReporteController::class, 'ventasMesReporte'])->name('reportes.ventas-mes');
+    Route::get('/articulos-mas-vendidos', [ReporteController::class, 'articulosMasVendidosReporte'])->name('reportes.articulos-mas-vendidos');
+    
 });
 
 Route::get('/compras/{compra}/reporte/pdf', [CompraReporteController::class, 'detallePdf'])

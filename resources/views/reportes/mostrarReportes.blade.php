@@ -211,6 +211,24 @@
     </div>
 </div>
 
+<button type="button" 
+        class="btn btn-primary shadow" 
+        id="btn-ayuda" 
+        style="
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 1050;
+            width: 50px;         
+            height: 50px;        
+            border-radius: 50%;  
+            font-size: 1.5rem;  
+            font-weight: bold;   
+            padding: 0;          
+        ">
+    ?
+</button>
+
 <style>
 .card {
     border-radius: 10px;
@@ -242,3 +260,99 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const $ = sel => document.querySelector(sel);
+
+  function highlight(el) {
+    if (!el) return false;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('help-pulse');
+    setTimeout(() => el.classList.remove('help-pulse'), 1400);
+    return true;
+  }
+  // Botón de ayuda (el mismo que usas en tus otras vistas)
+  const btnAyuda = $('#btn-ayuda');
+  if (!btnAyuda) return;
+
+  btnAyuda.addEventListener('click', async () => {
+    let i = 0;
+    const steps = [
+      {
+        icon: 'question',
+        title: 'Reportes del Sistema',
+        html: `
+          <div class="text-start">
+            <p>Descarga reportes en <b>PDF</b> de <b>categorías, marcas, productos, usuarios</b> y <b>ventas por mes</b>.</p>
+            <p>Arriba verás tarjetas-resumen; abajo la <b>tabla de reportes</b> con sus botones de descarga.</p>
+          </div>`
+      },
+      {
+        icon: 'info',
+        title: 'Tarjetas (resumen)',
+        html: `
+          <div class="text-start">
+            <p>Estas tarjetas muestran los conteos actuales de <b>Categorías</b>, <b>Marcas</b>, <b>Productos</b> y <b>Usuarios</b>.</p>
+          </div>`,
+        onOpen: () => highlight(cardCats) || highlight(cardMarcas) || highlight(cardProds) || highlight(cardUsers)
+      },
+      {
+        icon: 'info',
+        title: 'Tabla de reportes',
+        html: `
+          <div class="text-start">
+            <p>Aquí tienes el listado de reportes con su <b>descripción</b>, <b>registros</b> y botón de <b>Descargar PDF</b>.</p>
+          </div>`,
+        onOpen: () => highlight(tablaReportes)
+      },
+      {
+        icon: 'warning',
+        title: 'Volver',
+        html: `<div class="text-start"><p>Usa <b>Volver</b> para regresar cuando termines.</p></div>`,
+        onOpen: () => highlight(elVolver)
+      }
+    ];
+
+    const modal = Swal.mixin({
+      showCancelButton: false,
+      focusConfirm: true,
+      confirmButtonText: 'Siguiente',
+      confirmButtonColor: '#3085d6',
+      width: 600,
+      allowOutsideClick: false,
+      didOpen: () => {
+        const s = steps[i];
+        if (s && typeof s.onOpen === 'function') setTimeout(s.onOpen, 50);
+      }
+    });
+
+    for (i = 0; i < steps.length; i++) {
+      await modal.fire({
+        icon: steps[i].icon,
+        title: steps[i].title,
+        html: steps[i].html,
+        confirmButtonText: i === steps.length - 1 ? 'Entendido' : 'Siguiente'
+      });
+    }
+  });
+});
+</script>
+
+<style>
+/* Efecto de resalte (igual al tuyo) */
+.help-pulse {
+  box-shadow: 0 0 0 0 rgba(49,132,253,.5);
+  animation: help-pulse 1.4s ease-out 1;
+  outline: 2px solid rgba(49,132,253,.35);
+  border-radius: 6px;
+}
+@keyframes help-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(49,132,253,.5); }
+  70%  { box-shadow: 0 0 0 12px rgba(49,132,253,0); }
+  100% { box-shadow: 0 0 0 0 rgba(49,132,253,0); }
+}
+</style>
+@endpush

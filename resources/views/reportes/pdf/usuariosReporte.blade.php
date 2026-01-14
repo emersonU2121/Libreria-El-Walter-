@@ -47,5 +47,15 @@
     <div class="footer">
         Total de usuarios: {{ $usuarios->count() }}
     </div>
+    <footer>
+  <table style="width:100%;">
+  </table>
+  <script type="text/php">
+    if (isset($pdf)) {
+      $pdf->page_text(520, 818, "Página {PAGE_NUM} de {PAGE_COUNT}",
+        $fontMetrics->get_font("DejaVu Sans","normal"), 9, [0.4,0.4,0.4]);
+    }
+  </script>
+</footer>
 </body>
 </html>

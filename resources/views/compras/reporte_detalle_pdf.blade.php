@@ -3,24 +3,11 @@
 <head>
 <meta charset="utf-8">
 <title>Detalle de Compra #{{ $compra->idcompra }} | {{ $empresa }}</title>
-<style>
-  @page { margin: 28mm 18mm 22mm 18mm; }
-  body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #111; }
-  header { position: fixed; top: -22mm; left: 0; right: 0; height: 20mm; }
-  footer { position: fixed; bottom: -18mm; left: 0; right: 0; height: 16mm; font-size: 10px; color:#666; }
 
-  .brand { font-weight: 700; font-size: 18px; }
-  .muted { color:#555; }
-  .right { text-align:right; }
-  .chip { display:inline-block; padding:6px 10px; border-radius:6px; background:#0a6b3e; color:#fff; font-weight:700; }
 
-  .card { border:1px solid #ddd; border-radius:6px; padding:12px; margin-bottom:12px; }
-  .grid { width:100%; border-collapse: collapse; }
-  .grid th, .grid td { border:1px solid #ddd; padding:6px 8px; }
-  .grid th { background:#f3f6f9; text-align:left; font-weight:700; }
-  .text-end { text-align:right; }
-  .text-center { text-align:center; }
-</style>
+<link href="{{ public_path('css/compras/reporte_detalle_pdf.css') }}" rel="stylesheet">
+
+
 </head>
 <body>
 
@@ -37,7 +24,7 @@
   <table style="width:100%;">
     <tr>
       <td class="muted">Generado: {{ $generado }}</td>
-      <td class="right muted">Página: <span class="page-number"></span></td>
+      
     </tr>
   </table>
 

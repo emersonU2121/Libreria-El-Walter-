@@ -36,7 +36,6 @@
 <div class="mb-3">
   <label for="edit_rol" class="form-label">Rol</label>
   <select id="edit_rol" name="rol" class="form-select">
-    <option value="" {{ old('rol')=='' ? 'selected' : '' }}>Sin rol</option>
     <option value="Administrador" {{ old('rol')=='Administrador' ? 'selected' : '' }}>Administrador</option>
     <option value="Empleado" {{ old('rol')=='Empleado' ? 'selected' : '' }}>Empleado</option>
   </select>

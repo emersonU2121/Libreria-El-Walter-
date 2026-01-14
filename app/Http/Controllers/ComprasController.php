@@ -12,11 +12,21 @@ use App\Models\Usuario;
 
 class ComprasController extends Controller
 {
-    // Mostrar formulario de compra 
+  
+  // Mostrar formulario de compra 
     public function create()
     {
+        
         $productos = Producto::where('estado', 1)->get();
-        return view('compras.registrar', compact('productos'));
+
+      
+        $productosBajoStock = Producto::where('estado', 1)
+                                    ->where('stock', '>', 0)
+                                    ->orderBy('stock', 'asc')
+                                    ->get();
+
+        // 3. Enviar ambas listas a la vista
+        return view('compras.registrar', compact('productos', 'productosBajoStock'));
     }
 
     // Procesar la compra 

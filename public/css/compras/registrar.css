@@ -1,0 +1,70 @@
+.producto-item {
+    transition: all 0.2s ease;
+}
+
+.producto-item:hover {
+    border-color: #0d6efd !important;
+}
+
+.card {
+    border-radius: 8px;
+}
+
+.btn {
+    border-radius: 6px;
+}
+
+.form-control {
+    border-radius: 6px;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.precio-compra-editable:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+
+
+/* Estilos para las tarjetas del modal */
+#lista-productos-modal .card {
+    transition: all 0.2s ease;
+    border: 1px solid #dee2e6;
+}
+
+#lista-productos-modal .card:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+#lista-productos-modal .card-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Estilo para el display del producto en la fila */
+.producto-display {
+    min-height: 31px; /* Misma altura que un form-control-sm */
+    display: flex;
+    align-items: center;
+    background-color: #f8f9fa;
+}
+
+/* --- NUEVOS ESTILOS PARA MODAL LISTA DE COMPRA --- */
+.card-lista-compra {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.card-lista-compra:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+/* Estilo cuando la card está seleccionada (checkbox marcado) */
+.card-lista-compra.selected {
+    border-color: #0d6efd;
+    border-width: 2px;
+    background-color: #eef7ff;
+}

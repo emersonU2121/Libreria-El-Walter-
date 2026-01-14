@@ -132,6 +132,24 @@
     </div>
 </div>
 
+<button type="button" 
+        class="btn btn-primary shadow" 
+        id="btn-ayuda" 
+        style="
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 1050;
+            width: 50px;         
+            height: 50px;        
+            border-radius: 50%;  
+            font-size: 1.5rem;  
+            font-weight: bold;   
+            padding: 0;          
+        ">
+    ?
+</button>
+
 {{-- ======= Modals separados ======= --}}
 @include('backup.eliminar_backup')
 @include('backup.depurar_backup')
@@ -160,3 +178,145 @@ document.getElementById('btn-open-purge')?.addEventListener('click', function(){
 @media (max-width: 767.98px) { .table-responsive-md { overflow-x: auto; } }
 </style>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const $ = sel => document.querySelector(sel);
+
+  function highlight(el) {
+    if (!el) return false;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('help-pulse');
+    setTimeout(() => el.classList.remove('help-pulse'), 1400);
+    return true;
+  }
+
+  // Botón de ayuda (mismo que en tus otras vistas)
+  const btnAyuda = $('#btn-ayuda');
+  if (!btnAyuda) return;
+
+  btnAyuda.addEventListener('click', async () => {
+    let i = 0;
+    const steps = [
+      {
+        icon: 'question',
+        title: 'Respaldos del Sistema',
+        html: `
+          <div class="text-start">
+            <p>En esta pantalla puedes <b>generar</b> y <b>descargar</b> respaldos <b>.sql</b> de la base de datos, 
+            además de <b>eliminar respaldos antiguos</b> y <b>gestionar</b> los archivos guardados.</p>
+          </div>`
+      },
+      {
+        icon: 'info',
+        title: 'Guardar SQL',
+        html: `
+          <div class="text-start">
+            <p>El botón <b>Guardar SQL</b> crea un archivo <b>.sql</b> y lo deja almacenado en el servidor 
+            (aparecerá en la tabla de abajo).</p>
+          </div>`,
+        onOpen: () => highlight(btnGuardar)
+      },
+      {
+        icon: 'info',
+        title: 'Generar y descargar',
+        html: `
+          <div class="text-start">
+            <p>El botón <b>Generar y descargar</b> crea el respaldo y lo <b>descarga</b> directamente a tu equipo, 
+            sin dejar copia adicional en el listado.</p>
+          </div>`,
+        onOpen: () => highlight(btnGenDesc)
+      },
+      {
+        icon: 'warning',
+        title: 'Depurar respaldos antiguos',
+        html: `
+          <div class="text-start">
+            <p>Configura cuántos <b>días</b> mínimos debe tener un archivo para ser eliminado y presiona 
+            <b>Depurar</b> para limpiar respaldos antiguos.</p>
+          </div>`,
+        onOpen: () => highlight(inputDias) || highlight(btnDepurar)
+      },
+      {
+        icon: 'info',
+        title: 'Respaldos guardados',
+        html: `
+          <div class="text-start">
+            <p>En la tabla verás los archivos <b>guardados</b> (nombre, fecha, usuario, tamaño) con sus acciones.</p>
+          </div>`,
+        onOpen: () => highlight(tablaResp)
+      },
+      {
+        icon: 'info',
+        title: 'Descargar / Eliminar',
+        html: `
+          <div class="text-start">
+            <ul class="mb-0">
+              <li><b>Descargar</b>: baja el archivo <b>.sql</b> a tu equipo.</li>
+              <li><b>Eliminar</b>: borra el archivo del servidor.</li>
+            </ul>
+          </div>`,
+        onOpen: () => highlight(btnDescFirst) || highlight(btnDelFirst)
+      },
+      {
+        icon: 'warning',
+        title: 'Recomendaciones',
+        html: `
+          <div class="text-start">
+            <ul class="mb-0">
+              <li>Mantén un <b>historial</b> razonable de copias y <b>verifica</b> la restauración periódicamente.</li>
+              <li>Guarda respaldos en un <b>lugar externo</b> por seguridad.</li>
+            </ul>
+          </div>`
+      },
+      {
+        icon: 'info',
+        title: 'Volver',
+        html: `<div class="text-start"><p>Usa <b>Volver</b> para regresar al módulo anterior.</p></div>`,
+        onOpen: () => highlight(btnVolver)
+      }
+    ];
+
+    const modal = Swal.mixin({
+      showCancelButton: false,
+      focusConfirm: true,
+      confirmButtonText: 'Siguiente',
+      confirmButtonColor: '#3085d6',
+      width: 600,
+      allowOutsideClick: false,
+      didOpen: () => {
+        const s = steps[i];
+        if (s && typeof s.onOpen === 'function') setTimeout(s.onOpen, 50);
+      }
+    });
+
+    for (i = 0; i < steps.length; i++) {
+      await modal.fire({
+        icon: steps[i].icon,
+        title: steps[i].title,
+        html: steps[i].html,
+        confirmButtonText: i === steps.length - 1 ? 'Entendido' : 'Siguiente'
+      });
+    }
+  });
+});
+</script>
+
+<style>
+/* Efecto de resalte (mismo que has usado antes) */
+.help-pulse {
+  box-shadow: 0 0 0 0 rgba(49,132,253,.5);
+  animation: help-pulse 1.4s ease-out 1;
+  outline: 2px solid rgba(49,132,253,.35);
+  border-radius: 6px;
+}
+@keyframes help-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(49,132,253,.5); }
+  70%  { box-shadow: 0 0 0 12px rgba(49,132,253,0); }
+  100% { box-shadow: 0 0 0 0 rgba(49,132,253,0); }
+}
+</style>
+@endpush
+

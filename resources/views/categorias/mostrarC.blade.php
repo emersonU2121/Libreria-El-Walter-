@@ -1,259 +1,308 @@
 @extends('menu')
 
+{{-- 
+  Esta página no necesita un CSS externo.
+  Usará el CSS de 'menu.css' y el de Bootstrap.
+--}}
+
 @section('contenido')
-<div style="margin-right: 20px;" class="compact-form">
-    <h1>Registro de Categorías</h1>
 
-    @if(session('ok'))   <div class="alert alert-success">{{ session('ok') }}</div> @endif
-    @if(session('error'))<div class="alert alert-danger">{{ session('error') }}</div> @endif
+<meta name="categorias-validate-url" content="{{ route('categorias.validar-nombre') }}">
 
-    @if ($errors->any())
+
+<div class="container-fluid py-4 mt-5 px-3">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0 text-dark">Gestión de Categorías</h2>
+    </div>
+
+    @if(session('ok'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('ok') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if(session('error'))
+         <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    
+    {{-- Muestra errores de registro, pero no los del modal --}}
+    @if ($errors->any() && !$errors->has('nombre')) {{-- Asumiendo que el error del modal NO se llama 'nombre' --}}
         <div class="alert alert-danger">
             <ul class="mb-0">
-                @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
             </ul>
         </div>
     @endif
 
-    <form action="{{ route('categorias.store') }}" method="post" autocomplete="off" novalidate id="formRegistro">
-        @csrf
-        <div class="mb-3">
-            <label for="nombre" class="form-label">Nombre de la Categoría</label>
-            <input type="text" id="nombre" name="nombre" class="form-control" value="{{ old('nombre') }}" required>
-            @error('nombre')<div class="text-danger small">{{ $message }}</div>@enderror
+
+    <div class="row">
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 text-dark">Registrar Nueva Categoría</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('categorias.store') }}" method="post" autocomplete="off" novalidate id="formRegistro">
+                        @csrf
+                
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label fw-semibold text-dark">Nombre de la Categoría</label>
+                            <input type="text" id="nombre" name="nombre" 
+                                   class="form-control @error('nombre') is-invalid @enderror" 
+                                   value="{{ old('nombre') }}" required>
+                            
+                            @error('nombre')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            {{-- Div para el error de JS --}}
+                            <div id="error-js-registro-cat" class="invalid-feedback d-none">Este campo es requerido.</div> 
+                        </div>
+                
+                        <div class="d-flex justify-content-end gap-2">
+                             {{-- Botones adaptados --}}
+                            <a href="{{ route('categorias.mostrarC') }}" class="btn btn-outline-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">Registrar Categoría</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
 
-        <div class="d-flex justify-content-between">
-            <button type="submit" class="btn btn-dark">Registrar Categoría</button>
-            <a href="{{ route('categorias.mostrarC') }}" class="btn btn-danger">Cancelar</a>
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 text-dark">Categorías Registradas</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('categorias.mostrarC') }}" method="GET" class="row g-3 align-items-center mb-3">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input
+                                    type="text"
+                                    name="q"
+                                    class="form-control"
+                                    placeholder="Buscar categorías por nombre..."
+                                    value="{{ request('q') }}"
+                                    aria-label="Buscar categorías">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            @if(request('q'))
+                                <div class="d-flex align-items-center">
+                                    <span class="text-muted me-2">Resultados para: "{{ request('q') }}"</span>
+                                    <a href="{{ route('categorias.mostrarC') }}" class="btn btn-outline-secondary btn-sm">Limpiar</a>
+                                </div>
+                            @endif
+                        </div>
+                    </form>
+
+                    @if($categorias->isEmpty())
+                        <div class="alert alert-warning text-center">No hay categorías registradas.</div>
+                    @else
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm text-center align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-dark">Nombre</th>
+                                        <th class="text-dark" style="width:240px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @foreach($categorias as $c)
+                                    <tr>
+                                        <td>{{ $c->nombre }}</td>
+                                        <td>
+                                            <div class="d-flex gap-2 justify-content-center">
+                                                {{-- Editar (Botón con nuevo estilo 'outline') --}}
+                                                <button
+                                                  type="button"
+                                                  class="btn btn-sm btn-outline-primary btn-open-edit"
+                                                  data-bs-toggle="modal"
+                                                  data-bs-target="#modalEditar"
+                                                  data-idcategoria="{{ $c->idcategoria }}"
+                                                  data-nombre="{{ $c->nombre }}"
+                                                  data-update-url="{{ route('categorias.update', $c->idcategoria) }}"
+                                                >Editar</button>
+                        
+                                                {{-- Eliminar (Botón con nuevo estilo 'outline') --}}
+                                                <button
+                                                  type="button"
+                                                  class="btn btn-sm btn-outline-danger btn-open-eliminar"
+                                                  data-bs-toggle="modal"
+                                                  data-bs-target="#modalEliminar"
+                                                  data-idcategoria="{{ $c->idcategoria }}"
+                                                  data-nombre="{{ $c->nombre }}"
+                                                  data-delete-url="{{ route('categorias.destroy', $c->idcategoria) }}"
+                                                >Eliminar</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="text-muted small">
+                                Mostrando {{ $categorias->firstItem() }}–{{ $categorias->lastItem() }} de {{ $categorias->total() }}
+                            </div>
+                            <div>
+                                {!! $categorias->links('vendor.pagination.prev-next-only') !!}
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
         </div>
-    </form>
-</div>
-
-{{-- Card del listado (mt-5 para despegar del navbar) --}}
-<div style="margin: auto" class="card shadow mt-5 p-4 w-100">
-  <h2 class="mb-4 text-center">Lista de Categorías</h2>
-
-  {{-- Buscador superior --}}
-  <div class="card-body">
-      <form action="{{ route('categorias.mostrarC') }}" method="GET" class="row g-3 align-items-center">
-          <div class="col-md-8">
-              <div class="input-group">
-                  <input
-                      type="text"
-                      name="q"
-                      class="form-control"
-                      placeholder="Buscar categorías por nombre..."
-                      value="{{ request('q') }}"
-                      aria-label="Buscar categorías">
-                  <button type="submit" class="btn btn-primary">Buscar</button>
-              </div>
-          </div>
-          <div class="col-md-4">
-              @if(request('q'))
-                  <div class="d-flex align-items-center">
-                      <span class="text-muted me-2">Resultados para: "{{ request('q') }}"</span>
-                      <a href="{{ route('categorias.mostrarC') }}" class="btn btn-outline-secondary btn-sm">Limpiar</a>
-                  </div>
-              @endif
-          </div>
-      </form>
-  </div>
-
-  @if($categorias->isEmpty())
-    <div class="alert alert-warning text-center">No hay categorías registradas.</div>
-  @else
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped text-center align-middle">
-        <thead class="table-dark">
-          <tr>
-            <th>Nombre</th>
-            <th style="width:240px;">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @foreach($categorias as $c)
-            <tr>
-              <td>{{ $c->nombre }}</td>
-              <td class="d-flex gap-2 justify-content-center">
-                {{-- Editar --}}
-                <button
-                  type="button"
-                  class="btn btn-sm btn-primary btn-open-edit"
-                  data-bs-toggle="modal"
-                  data-bs-target="#modalEditar"
-                  data-idcategoria="{{ $c->idcategoria }}"
-                  data-nombre="{{ $c->nombre }}"
-                  data-update-url="{{ route('categorias.update', $c->idcategoria) }}"
-                >Editar</button>
-
-                {{-- Eliminar --}}
-                <button
-                  type="button"
-                  class="btn btn-sm btn-danger btn-open-eliminar"
-                  data-bs-toggle="modal"
-                  data-bs-target="#modalEliminar"
-                  data-idcategoria="{{ $c->idcategoria }}"
-                  data-nombre="{{ $c->nombre }}"
-                  data-delete-url="{{ route('categorias.destroy', $c->idcategoria) }}"
-                >Eliminar</button>
-              </td>
-            </tr>
-          @endforeach
-        </tbody>
-      </table>
-    </div>
-
-    {{-- Paginación compacta con prev/next --}}
-    <div class="d-flex justify-content-between align-items-center mt-3">
-      <div class="text-muted small">
-        Mostrando {{ $categorias->firstItem() }}–{{ $categorias->lastItem() }} de {{ $categorias->total() }}
-      </div>
-      <div>
-        {!! $categorias->links('vendor.pagination.prev-next-only') !!}
-      </div>
-    </div>
-  @endif
-</div>
-
-{{-- Modales (ajusta nombres si tus parciales se llaman distinto) --}}
+    </div> </div> 
+    <button type="button" 
+        class="btn btn-primary shadow" 
+        id="btn-ayuda" 
+        style="
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 1050;
+            width: 50px;         
+            height: 50px;        
+            border-radius: 50%;  
+            font-size: 1.5rem;  
+            font-weight: bold;   
+            padding: 0;          
+        ">
+    ?
+</button>
 @include('categorias._modal_editar')
-@include('categorias._modal_baja')
+@include('categorias._modal_baja') 
 
-{{-- === JS === --}}
+@endsection
+
+
+{{-- 
+    Scripts (Todo tu código JS original, sin cambios, 
+    movido dentro de un solo @push) 
+--}}
+@push('scripts')
+<script src="{{ asset('js/categorias/mostrarC.js') }}"></script>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // EDITAR
-  document.querySelectorAll('.btn-open-edit').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById('edit_idcategoria').value = btn.dataset.idcategoria;
-      document.getElementById('edit_nombre').value = btn.dataset.nombre || '';
-      const f = document.getElementById('formEditarCategoria');
-      if (f) f.action = btn.dataset.updateUrl || '#';
-    });
-  });
+  const $ = (sel) => document.querySelector(sel);
 
-  // ELIMINAR (click directo)
-  document.querySelectorAll('.btn-open-eliminar').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.dataset.idcategoria;
-      const nombre = btn.dataset.nombre || '';
-      const f = document.getElementById('formEliminarCategoria');
-      const msg = document.getElementById('eliminar_message');
-      const hid = document.getElementById('eliminar_idcategoria');
-
-      if (hid) hid.value = id;
-      if (msg) msg.innerHTML = `¿Estás seguro de eliminar la categoría <strong>${nombre}</strong>? Esta acción no se puede deshacer.`;
-      if (f) f.action = btn.dataset.deleteUrl || '#';
-    });
-  });
-
-  // ELIMINAR (fallback: show.bs.modal)
-  const modalEliminarEl = document.getElementById('modalEliminar');
-  if (modalEliminarEl) {
-    modalEliminarEl.addEventListener('show.bs.modal', (ev) => {
-      const btn = ev.relatedTarget; if (!btn) return;
-      const id = btn.getAttribute('data-idcategoria');
-      const nombre = btn.getAttribute('data-nombre') || '';
-      const f = document.getElementById('formEliminarCategoria');
-      const msg = document.getElementById('eliminar_message');
-      const hid = document.getElementById('eliminar_idcategoria');
-
-      if (hid) hid.value = id;
-      if (msg) msg.innerHTML = `¿Estás seguro de eliminar la categoría <strong>${nombre}</strong>? Esta acción no se puede deshacer.`;
-      if (f) f.action = btn.getAttribute('data-delete-url') || '#';
-    });
+  // Resalta el elemento del paso
+  function focusStep(el) {
+    if (!el) return false;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('help-pulse');
+    setTimeout(() => el.classList.remove('help-pulse'), 1400);
+    return true;
   }
 
-  // Salvaguarda: evitar submit sin action
-  ['formEditarCategoria','formEliminarCategoria'].forEach(id => {
-    const f = document.getElementById(id);
-    if (f) f.addEventListener('submit', e => {
-      if (!f.action || f.action.endsWith('#')) {
-        e.preventDefault();
-        alert('No se pudo determinar el destino del formulario.');
+  const btnAyuda = document.getElementById('btn-ayuda');
+  if (!btnAyuda) return;
+
+  btnAyuda.addEventListener('click', async () => {
+    let i = 0;
+    const steps = [
+      {
+        icon: 'question',
+        title: 'Ayuda rápida',
+        html: `
+          <div class="text-start">
+            <p>En esta pantalla puedes <b>registrar, buscar, editar y eliminar</b> categorías.</p>
+            <ul class="mb-0">
+              <li>El panel <b>izquierdo</b> registra nuevas categorías.</li>
+              <li>El panel <b>derecho</b> lista y permite buscar/accionar.</li>
+            </ul>
+          </div>`
+      },
+      {
+        icon: 'info',
+        title: 'Registrar nueva categoría',
+        html: `
+          <div class="text-start">
+            <ol class="mb-0">
+              <li>Escribe el <b>Nombre de la Categoría</b>.</li>
+              <li>Haz clic en <b>Registrar Categoría</b>.</li>
+            </ol>
+          </div>`,
+        onOpen: () => focusStep($('#categoria_nombre')) || focusStep($('#btn-registrar-categoria'))
+      },
+      {
+        icon: 'info',
+        title: 'Buscar categorías',
+        html: `
+          <div class="text-start">
+            <ol class="mb-0">
+              <li>Escribe el nombre en <b>Buscar categorías por nombre</b>.</li>
+              <li>Presiona <b>Buscar</b>.</li>
+            </ol>
+          </div>`,
+        onOpen: () => focusStep($('#input-buscar-categoria')) || focusStep($('#btn-buscar-categoria'))
+      },
+      {
+        icon: 'info',
+        title: 'Lista y acciones',
+        html: `
+          <div class="text-start">
+            <p>En cada fila puedes:</p>
+            <ul class="mb-2">
+              <li><b>Editar</b> el nombre de la categoría.</li>
+              <li><b>Eliminar</b> (se pedirá confirmación).</li>
+            </ul>
+            <p class="mb-0"><small>Si no ves acciones, revisa tus permisos.</small></p>
+          </div>`,
+        onOpen: () => focusStep($('#tabla-categorias'))
       }
+    ];
+
+    const modal = Swal.mixin({
+      showCancelButton: false,
+      focusConfirm: true,
+      confirmButtonText: 'Siguiente',
+      confirmButtonColor: '#3085d6',
+      width: 600,
+      allowOutsideClick: false,
+      didOpen: () => { const s = steps[i]; if (s && typeof s.onOpen === 'function') setTimeout(s.onOpen, 50); }
     });
-  });
-});
 
-// Validación AJAX del nombre al editar
-document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('formEditarCategoria');
-  if (!form) return;
-
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    form.querySelectorAll('.text-danger').forEach(el => el.remove());
-
-    const nombreActual = document.getElementById('edit_nombre').value;
-    const idcategoria  = document.getElementById('edit_idcategoria').value;
-
-    const botonOriginal = document.querySelector('.btn-open-edit[data-idcategoria="' + idcategoria + '"]');
-    if (!botonOriginal) { form.submit(); return; }
-
-    const nombreOriginal = botonOriginal.dataset.nombre;
-    if (nombreActual === nombreOriginal) { form.submit(); return; }
-
-    fetch("{{ route('categorias.validar-nombre') }}", {
-      method: 'POST',
-      headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" },
-      body: JSON.stringify({ nombre: nombreActual, idcategoria })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.duplicado) {
-        const err = document.createElement('div');
-        err.className = 'text-danger small mt-1';
-        err.textContent = 'La categoría ya ha sido registrada.';
-        document.getElementById('edit_nombre').after(err);
-      } else {
-        form.submit();
-      }
-    })
-    .catch(() => form.submit());
-  });
-});
-</script>
-
-@if ($errors->has('nombre'))
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var modal = new bootstrap.Modal(document.getElementById('modalEditar'));
-    modal.show();
-  });
-</script>
-@endif
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const modalEditar = document.getElementById('modalEditar');
-  if (modalEditar) {
-    modalEditar.addEventListener('hide.bs.modal', function () {
-      document.querySelectorAll('#modalEditar .text-danger').forEach(el => el.style.display = 'none');
-    });
-  }
-});
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('formRegistro');
-  if (!form) return;
-  const nombreInput = document.getElementById('nombre');
-
-  nombreInput.addEventListener('input', function() {
-    if (nombreInput.value.trim() === '') nombreInput.classList.add('is-invalid');
-    else nombreInput.classList.remove('is-invalid');
-  });
-
-  form.addEventListener('submit', function(e) {
-    if (nombreInput.value.trim() === '') {
-      e.preventDefault();
-      nombreInput.classList.add('is-invalid');
-      nombreInput.focus();
+    for (i = 0; i < steps.length; i++) {
+      await modal.fire({
+        icon: steps[i].icon,
+        title: steps[i].title,
+        html: steps[i].html,
+        confirmButtonText: i === steps.length - 1 ? 'Entendido' : 'Siguiente'
+      });
     }
   });
 });
 </script>
-@endsection
+
+<style>
+/* Efecto de resalte */
+.help-pulse {
+  box-shadow: 0 0 0 0 rgba(49,132,253,.5);
+  animation: help-pulse 1.4s ease-out 1;
+  outline: 2px solid rgba(49,132,253,.35);
+  border-radius: 6px;
+}
+@keyframes help-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(49,132,253,.5); }
+  70%  { box-shadow: 0 0 0 12px rgba(49,132,253,0); }
+  100% { box-shadow: 0 0 0 0 rgba(49,132,253,0); }
+}
+</style>
+@endpush

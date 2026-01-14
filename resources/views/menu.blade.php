@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <title>Librería El Walter</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('css/menu.css') }}" rel="stylesheet">
@@ -31,50 +33,35 @@
                     <!-- BOTONES BÁSICOS (SIEMPRE VISIBLES) -->
 
                     {{-- === PRODUCTOS (dropdown) === --}}
-                    <div class="dropdown d-inline-block">
-                        <a class="value text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                   
+                        <a class="value text-decoration-none" href="{{ route('productos.mostrar') }}">
                             <svg class="normal" viewBox="0 0 24 24" style="width:20px;height:20px;vertical-align:middle;">
                                 <path d="M3 7l9-5 9 5-9 5-9-5zm0 3l9 5 9-5v8l-9 5-9-5V10zm9 8l6-3.33V12l-6 3.33L6 12v2.67L12 18z" fill="currentColor" />
                             </svg>
                             Productos
                         </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('productos.registrar') }}">Registrar producto</a></li>
-                            <li><a class="dropdown-item" href="{{ route('productos.mostrar') }}">Mostrar productos</a></li>
-                        </ul>
-                    </div>
+                     
 
                     {{-- === Marca (dropdown) === --}}
-                    <div class="dropdown d-inline-block">
-                        <a class="value text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                   
+                        <a class="value text-decoration-none" href="{{ route('marcas.mostrar') }}">
                             <svg class="normal" viewBox="0 0 24 24" style="width:20px;height:20px;vertical-align:middle;">
                                 <path d="M23 12l-2.26 1.91.34 2.93-2.84 1.23-1.64 2.57-2.93-.34L12 23l-2.67-2.7-2.93.34-1.64-2.57-2.84-1.23.34-2.93L1 12l2.26-1.91-.34-2.93 2.84-1.23L7.4 3.36l2.93.34L12 1l2.67 2.7 2.93-.34 1.64 2.57 2.84 1.23-.34 2.93ZM11 15l7-7-1.41-1.41L11 12.17 8.41 9.59 7 11l4 4z" fill="currentColor"/>
                             </svg>
                             Marcas
                         </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('marcas.mostrar') }}">Mostrar Marca</a></li>
-                        </ul>
-                    </div>
+                       
 
                     {{-- CATEGORÍA (Dropdown) --}}
-                    <div class="dropdown d-inline-block">
-                        <a class="value text-decoration-none dropdown-toggle" href="#" id="dropdownCategorias"
-                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                   
+                        <a class="value text-decoration-none" href="{{ route('categorias.mostrarC') }}" >
                             <svg class="normal" viewBox="0 0 24 24">
                                 <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" fill="currentColor" />
                             </svg>
                             Categoría
                         </a>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownCategorias">
-                            
-                            <li>
-                                <a class="dropdown-item" href="{{ route('categorias.mostrarC') }}">
-                                    Mostrar Categorías
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
+                       
+                    
 
                    <a class="value text-decoration-none" href="{{ route('compras.registrar') }}">
     <svg class="normal" viewBox="0 0 24 24">
@@ -83,7 +70,7 @@
     Compras
 </a>
 
-                    <a href="#" class="value text-decoration-none">
+                    <a  class="value text-decoration-none" href="{{ route('ventas.registrar') }}">
                         <svg class="normal" viewBox="0 0 24 24">
                             <path d="M2 17h2v.5H3v1h1v.5H2v1h3v-4H2v1zm1-9h1V4H2v1h1v3zm-1 3h1.8L2 13.1v.9h3v-1H3.2L5 10.9V10H2v1zm5-6v2h14V5H7zm0 14h14v-2H7v2zm0-6h14v-2H7v2z" fill="currentColor" />
                         </svg>
@@ -93,18 +80,14 @@
                     <!-- MENÚ USUARIOS (SOLO PARA ADMINISTRADORES) -->
                     @auth
                     @if(Auth::user()->rol === 'Administrador')
-                    <div class="dropdown">
-                        <a class="value text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                   
+                        <a class="value text-decoration-none" href="{{ route('usuarios.mostrar') }}">
                             <svg class="normal" viewBox="0 0 24 24">
                                 <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A3.02 3.02 0 0016.95 6h-2.2c-.79 0-1.53.43-1.92 1.13L10.5 16H7v6h13zM4.5 11c-.83 0-1.5-.67-1.5-1.5S3.67 8 4.5 8s1.5.67 1.5 1.5S5.33 11 4.5 11zM7 20v-6H4v6h3z" fill="currentColor" />
                             </svg>
                             Usuarios
                         </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('usuarios.registrar') }}">Registrar usuario</a></li>
-                            <li><a class="dropdown-item" href="{{ route('usuarios.mostrar') }}">Mostrar usuarios</a></li>
-                        </ul>
-                    </div>
+                        
                     @endif
                     @endauth
 
@@ -181,9 +164,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    @stack('scripts')
 </body>
 <footer class="text-center mt-5 py-3 footer-transparent">
     <p>&copy; {{ date('Y') }} Universidad Nacional de El Salvador. Todos los derechos reservados.</p>
 </footer>
-
 </html>

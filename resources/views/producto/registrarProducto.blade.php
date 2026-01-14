@@ -75,8 +75,15 @@
     }
 </style>
 
+
+
 <div class="formulario-rectangular">
-    <h1>Registro de Producto</h1>
+ <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0 text-dark">Registro de productos</h2>
+     <a href="{{ route('productos.mostrar') }}" class="btn btn-primary" align="right" style="margin-bottom: 15px;">
+            <i class="fas fa-plus me-2"></i>Lista de productos
+        </a>
+</div>
 
     @if ($errors->any())
     <div class="alert alert-danger">
@@ -230,11 +237,29 @@
 
         <!-- BOTONES CENTRADOS EN LA PARTE INFERIOR -->
         <div class="btn-container">
+            <a href="{{ route('productos.mostrar') }}" class="btn btn-danger">Cancelar</a>
             <button type="submit" class="btn btn-dark">Guardar</button>
-            <a href="{{ route('inicio') }}" class="btn btn-danger">Cancelar</a>
+            
         </div>
     </form>
 </div>
+<button type="button" 
+        class="btn btn-primary shadow" 
+        id="btn-ayuda" 
+        style="
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 1050;
+            width: 50px;         
+            height: 50px;        
+            border-radius: 50%;  
+            font-size: 1.5rem;  
+            font-weight: bold;   
+            padding: 0;          
+        ">
+    ?
+</button>
 
 <script>
 // ===== PREVIEW DE IMAGEN =====
@@ -585,3 +610,140 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const $ = s => document.querySelector(s);
+
+  function highlight(el) {
+    if (!el) return false;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('help-pulse');
+    setTimeout(() => el.classList.remove('help-pulse'), 1400);
+    return true;
+  }
+
+  const btnAyuda = $('#btn-ayuda');
+  if (!btnAyuda) return;
+
+  btnAyuda.addEventListener('click', async () => {
+    let i = 0;
+    const steps = [
+      {
+        icon: 'question',
+        title: 'Registro de productos',
+        html: `
+          <div class="text-start">
+            <p>Completa los campos y pulsa <b>Guardar</b>. Puedes volver a la <b>Lista de productos</b> cuando quieras.</p>
+          </div>`,
+        onOpen: () => highlight($('#btn-lista-productos'))
+      },
+      {
+        icon: 'info',
+        title: 'Codigo y existencias',
+        html: `
+          <div class="text-start">
+            <ul class="mb-0">
+              <li><b>Codigo</b>: solo números (8 a 13 dígitos).</li>
+              <li><b>Existencias</b>: cantidad en inventario.</li>
+            </ul>
+          </div>`,
+        onOpen: () => highlight($('#prd_identificador')) || highlight($('#prd_existencias'))
+      },
+      {
+        icon: 'info',
+        title: 'Lectura por cámara (opcional)',
+        html: `
+          <div class="text-start">
+            <p>Usa <b>Activar cámara</b> para leer códigos automáticamente.</p>
+          </div>`,
+        onOpen: () => highlight($('#btn-camara'))
+      },
+      {
+        icon: 'info',
+        title: 'Estado e imagen',
+        html: `
+          <div class="text-start">
+            <ul class="mb-0">
+              <li><b>Estado</b>: Dependiendo de la existencia, puede ser disponible / agotado.</li>
+              <li><b>Imagen</b> (opcional): JPG, PNG o WEBP (máx. 2MB).</li>
+            </ul>
+          </div>`,
+        onOpen: () => highlight($('#prd_estado')) || highlight($('#prd_imagen'))
+      },
+      {
+        icon: 'info',
+        title: 'Marca, nombre y categoría',
+        html: `
+          <div class="text-start">
+            <ul class="mb-0">
+              <li><b>Marca</b> y <b>Categoría</b>: selección obligatoria.</li>
+              <li><b>Nombre del producto</b>: cómo se mostrará en la lista y ventas.</li>
+            </ul>
+          </div>`,
+        onOpen: () => highlight($('#prd_marca')) || highlight($('#prd_nombre')) || highlight($('#prd_categoria'))
+      },
+      {
+        icon: 'info',
+        title: 'Precios',
+        html: `
+          <div class="text-start">
+            <ul class="mb-0">
+              <li><b>Compra</b> y <b>Venta</b>: números con hasta 2 decimales.</li>
+            </ul>
+          </div>`,
+        onOpen: () => highlight($('#prd_precio_compra')) || highlight($('#prd_precio_venta'))
+      },
+      {
+        icon: 'success',
+        title: 'Guardar o cancelar',
+        html: `
+          <div class="text-start">
+            <p>Si todo es correcto, pulsa <b>Guardar</b>. Usa <b>Cancelar</b> para volver sin cambios.</p>
+          </div>`,
+        onOpen: () => highlight($('#btn-guardar')) || highlight($('#btn-cancelar'))
+      }
+    ];
+
+    const modal = Swal.mixin({
+      showCancelButton: false,
+      focusConfirm: true,
+      confirmButtonText: 'Siguiente',
+      confirmButtonColor: '#3085d6',
+      width: 600,
+      allowOutsideClick: false,
+      didOpen: () => {
+        const s = steps[i];
+        if (s && typeof s.onOpen === 'function') setTimeout(s.onOpen, 50);
+      }
+    });
+
+    for (i = 0; i < steps.length; i++) {
+      await modal.fire({
+        icon: steps[i].icon,
+        title: steps[i].title,
+        html: steps[i].html,
+        confirmButtonText: i === steps.length - 1 ? 'Entendido' : 'Siguiente'
+      });
+    }
+  });
+});
+</script>
+
+<style>
+/* Efecto de resalte para el elemento del paso */
+.help-pulse {
+  box-shadow: 0 0 0 0 rgba(49,132,253,.5);
+  animation: help-pulse 1.4s ease-out 1;
+  outline: 2px solid rgba(49,132,253,.35);
+  border-radius: 6px;
+}
+@keyframes help-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(49,132,253,.5); }
+  70%  { box-shadow: 0 0 0 12px rgba(49,132,253,0); }
+  100% { box-shadow: 0 0 0 0 rgba(49,132,253,0); }
+}
+</style>
+@endpush

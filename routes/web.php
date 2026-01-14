@@ -17,6 +17,7 @@ use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\CompraReporteController;
 use App\Http\Controllers\ReporteProductoController;
+use App\Http\Controllers\VentaController;
 
 
 
@@ -100,20 +101,20 @@ Route::put('/productos/{id}/activo',     [ProductoController::class, 'activo'])-
 // ====== MARCAS ======
 
 // PRIMERO las rutas ESPECÍFICAS (fijas)
-Route::get('/marcas/registrar', [MarcaController::class, 'create'])->name('marcas.registrar');
-Route::get('/marcas/mostrar', [MarcaController::class, 'mostrar'])->name('marcas.mostrar'); // ← ESTA PRIMERO
+Route::get('/marcas/registrar', 'App\Http\Controllers\MarcaController@create')->name('marcas.registrar');
+Route::get('/marcas/mostrar', 'App\Http\Controllers\MarcaController@mostrar')->name('marcas.mostrar'); // ← ESTA PRIMERO
 
 // LUEGO las rutas con PARÁMETROS (variables)
-Route::get('/marcas/{id}', [MarcaController::class, 'show'])
+Route::get('/marcas/{id}', 'App\Http\Controllers\MarcaController@show')
     ->where('id', '[0-9]+') // Solo números
-    ->name('marcas.show');; // ← ESTA DESPUÉS
+    ->name('marcas.show'); // ← ESTA DESPUÉS
 
 // Otras rutas de marcas
-Route::get('/marcas', [MarcaController::class, 'index'])->name('marcas.index');
-Route::post('/marcas', [MarcaController::class, 'store'])->name('marcas.store');
-Route::put('/marcas/{id}', [MarcaController::class, 'update'])->name('marcas.update');
-Route::delete('/marcas/{id}', [MarcaController::class, 'destroy'])->name('marcas.destroy');
-Route::post('/marcas/validar', [MarcaController::class, 'validarMarca'])->name('marcas.validar');
+Route::get('/marcas', 'App\Http\Controllers\MarcaController@index')->name('marcas.index');
+Route::post('/marcas', 'App\Http\Controllers\MarcaController@store')->name('marcas.store');
+Route::put('/marcas/{id}', 'App\Http\Controllers\MarcaController@update')->name('marcas.update');
+Route::delete('/marcas/{id}', 'App\Http\Controllers\MarcaController@destroy')->name('marcas.destroy');
+Route::post('/marcas/validar', 'App\Http\Controllers\MarcaController@validarMarca')->name('marcas.validar');
 
 // ====== CATEGORIAS ======
 // routes/web.php
@@ -139,6 +140,9 @@ Route::get('/compras/registrar', [ComprasController::class, 'create'])->name('co
 Route::post('/compras', [ComprasController::class, 'store'])->name('compras.store');
 Route::get('/compras/mostrar', [ComprasController::class, 'mostrar'])->name('compras.mostrar');
 Route::get('/compras/{id}/detalles', [ComprasController::class, 'detalles'])->name('compras.detalles');
+
+Route::post('/productos/lista-de-compra-pdf', [ProductoController::class, 'generarListaDeCompraPdf'])
+    ->name('productos.listaDeCompraPdf');
 
 // ====== BACKUP========
 
@@ -173,6 +177,9 @@ Route::prefix('reportes')->group(function () {
     Route::get('/marcas', [ReporteController::class, 'marcasReporte'])->name('reportes.marcas');
     Route::get('/productos', [ReporteController::class, 'productosReporte'])->name('reportes.productos');
     Route::get('/usuarios', [ReporteController::class, 'usuariosReporte'])->name('reportes.usuarios');
+ Route::get('/ventas-mes', [ReporteController::class, 'ventasMesReporte'])->name('reportes.ventas-mes');
+    Route::get('/articulos-mas-vendidos', [ReporteController::class, 'articulosMasVendidosReporte'])->name('reportes.articulos-mas-vendidos');
+    
 });
 
 Route::get('/compras/{compra}/reporte/pdf', [CompraReporteController::class, 'detallePdf'])
@@ -180,3 +187,11 @@ Route::get('/compras/{compra}/reporte/pdf', [CompraReporteController::class, 'de
 
      Route::get('/productos/reporte/stock-bajo', [ReporteProductoController::class, 'stockBajoPdf'])
      ->name('productos.reporte.stock_bajo.pdf');
+
+     // ====== VENTAS (PUNTO DE VENTA) ======
+Route::get('/ventas/registrar', [VentaController::class, 'create'])->name('ventas.registrar');
+Route::post('/ventas/registrar', [VentaController::class, 'store'])->name('ventas.store');
+Route::get('/ventas/mostrar', [VentaController::class, 'mostrar'])->name('ventas.mostrar');
+Route::get('/ventas/{idventa}', [VentaController::class, 'show'])->name('ventas.detalles');
+Route::get('/ventas/{idventa}/pdf', [\App\Http\Controllers\VentaController::class, 'pdf'])->name('ventas.detalle.pdf');
+Route::get('/ventas/pdf/{id}', [VentaController::class, 'pdf'])->name('ventas.detalle.pdf');

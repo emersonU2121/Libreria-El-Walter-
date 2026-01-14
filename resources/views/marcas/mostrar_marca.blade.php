@@ -1,16 +1,26 @@
 @extends('menu')
 
+{{-- Esta página no necesita un CSS personalizado, usará el de Bootstrap y menu.css --}}
+
 @section('contenido')
-<div style="margin-right: 20px; "  class="compact-form">
-    <h1>Registro de Marcas</h1>
+<div class="container-fluid py-4 mt-5 px-3">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0 text-dark">Gestión de Marcas</h2>
+    </div>
 
     @if(session('ok'))
-        <div class="alert alert-success">{{ session('ok') }}</div>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('ok') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     @endif
     @if(session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
+         <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     @endif
-
     @if ($errors->any())
         <div class="alert alert-danger">
             <ul class="mb-0">
@@ -21,315 +31,263 @@
         </div>
     @endif
 
-    <form action="{{ route('marcas.store') }}" method="post" autocomplete="off" novalidate id="formRegistro">
-        @csrf
 
-        <div class="mb-3">
-            <label for="nombre" class="form-label">Nombre de la Marca</label>
-            <input type="text" id="nombre" name="nombre" class="form-control"
-                   value="{{ old('nombre') }}" required>
-            @error('nombre')
-                <div class="text-danger small">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div class="d-flex justify-content-between">
-            <button type="submit" class="btn btn-dark">Registrar Marca</button>
-            <a href="{{ route('marcas.index') }}" class="btn btn-danger">Cancelar</a>
-        </div>
-    </form>
-</div>
-
-
-
-
-<div style="margin: auto" class="card shadow mt-5 p-4 w-100">
-
-
-  <h2 class="mb-4 text-center">Lista de Marcas</h2>
-
-
-  <div class="card-body">
-        <form action="{{ route('marcas.mostrar') }}" method="GET" class="row g-3 align-items-center">
-            <div class="col-md-8">
-                <div class="input-group">
-                    <input type="text" 
-                           name="buscar" 
-                           class="form-control" 
-                           placeholder="Buscar marcas por nombre..." 
-                           value="{{ request('buscar') }}"
-                           aria-label="Buscar marcas">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search"></i> Buscar
-                    </button>
+    <div class="row">
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 text-dark">Registrar Nueva Marca</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('marcas.store') }}" method="post" autocomplete="off" novalidate id="formRegistro">
+                        @csrf
+                
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label fw-semibold text-dark">Nombre de la Marca</label>
+                            <input type="text" id="nombre" name="nombre" class="form-control"
+                                   value="{{ old('nombre') }}" required>
+                            @error('nombre')
+                                <div class="text-danger small">{{ $message }}</div>
+                            @enderror
+                        </div>
+                
+                        <div class="d-flex justify-content-end gap-2">
+                             {{-- Botones adaptados, pero con tus rutas originales --}}
+                            <a href="{{ route('marcas.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">Registrar Marca</button>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <div class="col-md-4">
-                @if(request('buscar'))
-                    <div class="d-flex align-items-center">
-                        <span class="text-muted me-2">
-                            Resultados para: "{{ request('buscar') }}"
-                        </span>
-                        <a href="{{ route('marcas.mostrar') }}" class="btn btn-outline-secondary btn-sm">
-                            <i class="fas fa-times"></i> Limpiar
-                        </a>
-                    </div>
-                @endif
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 text-dark">Marcas Registradas</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('marcas.mostrar') }}" method="GET" class="row g-3 align-items-center mb-3">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input type="text" 
+                                       name="buscar" 
+                                       class="form-control" 
+                                       placeholder="Buscar marcas por nombre..." 
+                                       value="{{ request('buscar') }}"
+                                       aria-label="Buscar marcas">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            @if(request('buscar'))
+                                <div class="d-flex align-items-center">
+                                    <span class="text-muted me-2">
+                                        Resultados para: "{{ request('buscar') }}"
+                                    </span>
+                                    <a href="{{ route('marcas.mostrar') }}" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-times"></i> Limpiar
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </form>
+
+                    @if($marcas->isEmpty())
+                        <div class="alert alert-warning text-center">No hay marcas registradas.</div>
+                    @else
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm text-center align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-dark">Nombre</th>
+                                        <th class="text-dark" style="width:240px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @foreach($marcas as $m)
+                                    <tr>
+                                        <td>{{ $m->nombre }}</td>
+                                        <td>
+                                            <div class="d-flex gap-2 justify-content-center">
+                                                {{-- Editar (Botón adaptado a 'outline') --}}
+                                                <button
+                                                  type="button"
+                                                  class="btn btn-sm btn-outline-primary btn-open-edit"
+                                                  data-bs-toggle="modal"
+                                                  data-bs-target="#modalEditar"
+                                                  data-idmarca="{{ $m->idmarca }}"
+                                                  data-nombre="{{ $m->nombre }}"
+                                                  data-update-url="{{ route('marcas.update', $m->idmarca) }}"
+                                                >Editar</button>
+                        
+                                                {{-- Eliminar (Botón adaptado a 'outline') --}}
+                                                <button
+                                                  type="button"
+                                                  class="btn btn-sm btn-outline-danger btn-open-eliminar"
+                                                  data-bs-toggle="modal"
+                                                  data-bs-target="#modalEliminar"
+                                                  data-idmarca="{{ $m->idmarca }}"
+                                                  data-nombre="{{ $m->nombre }}"
+                                                  data-delete-url="{{ route('marcas.destroy', $m->idmarca) }}"
+                                                >Eliminar</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="text-muted small">
+                                Mostrando {{ $marcas->firstItem() }}–{{ $marcas->lastItem() }} de {{ $marcas->total() }}
+                            </div>
+                            <div>
+                                {!! $marcas->links('vendor.pagination.prev-next-only') !!}
+                            </div>
+                        </div>
+                    @endif
+                </div>
             </div>
-        </form>
-    </div>
+        </div>
+    </div> </div> 
 
-    
-  @if($marcas->isEmpty())
-    <div class="alert alert-warning text-center">No hay marcas registradas.</div>
-  @else
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped text-center align-middle">
-        <thead class="table-dark">
-          <tr>
-
-            <th>Nombre</th>
-            <th style="width:240px;">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @foreach($marcas as $m)
-            <tr>
-
-              <td>{{ $m->nombre }}</td>
-              <td class="d-flex gap-2 justify-content-center">
-                {{-- Editar --}}
-                <button
-                  type="button"
-                  class="btn btn-sm btn-primary btn-open-edit"
-                  data-bs-toggle="modal"
-                  data-bs-target="#modalEditar"
-                  data-idmarca="{{ $m->idmarca }}"
-                  data-nombre="{{ $m->nombre }}"
-                  data-update-url="{{ route('marcas.update', $m->idmarca) }}"
-                >Editar</button>
-
-                {{-- Eliminar --}}
-                <button
-                  type="button"
-                  class="btn btn-sm btn-danger btn-open-eliminar"
-                  data-bs-toggle="modal"
-                  data-bs-target="#modalEliminar"
-                  data-idmarca="{{ $m->idmarca }}"
-                  data-nombre="{{ $m->nombre }}"
-                  data-delete-url="{{ route('marcas.destroy', $m->idmarca) }}"
-                >Eliminar</button>
-              </td>
-            </tr>
-          @endforeach
-        </tbody>
-      </table>
-    </div>
-    <div class="d-flex justify-content-between align-items-center mt-3">
-  <div class="text-muted small">
-    Mostrando {{ $marcas->firstItem() }}–{{ $marcas->lastItem() }} de {{ $marcas->total() }}
-  </div>
-  <div>
-    {!! $marcas->links('vendor.pagination.prev-next-only') !!}
-  </div>
-</div>
-
-  @endif
-</div>
-
-{{-- Modales --}}
+    <button type="button" 
+        class="btn btn-primary shadow" 
+        id="btn-ayuda" 
+        style="
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 1050;
+            width: 50px;         
+            height: 50px;        
+            border-radius: 50%;  
+            font-size: 1.5rem;  
+            font-weight: bold;   
+            padding: 0;          
+        ">
+    ?
+</button>
 @include('marcas._modal_editar_marca')
 @include('marcas._modal_baja_marca') 
 
-{{-- JS: fija actions, textos y colores (doble seguro: click y show.bs.modal) --}}
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  // ==== EDITAR =====
-  document.querySelectorAll('.btn-open-edit').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById('edit_idmarca').value = btn.dataset.idmarca;
-      document.getElementById('edit_nombre').value = btn.dataset.nombre || '';
-      const f = document.getElementById('formEditarMarca');
-      if (f) f.action = btn.dataset.updateUrl || '#';
-    });
-  });
+@endsection
 
-  // ==== ELIMINAR (click directo) ====
-  document.querySelectorAll('.btn-open-eliminar').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.dataset.idmarca;
-      const nombre = btn.dataset.nombre || '';
-      const f = document.getElementById('formEliminarMarca');
-      const msg = document.getElementById('eliminar_message');
-      const hid = document.getElementById('eliminar_idmarca');
 
-      if (hid) hid.value = id;
-      if (msg) {
-        msg.innerHTML = `¿Estás seguro de eliminar la marca <strong>${nombre}</strong>? Esta acción no se puede deshacer.`;
-      }
-      if (f) f.action = btn.dataset.deleteUrl || '#';
-    });
-  });
+@push('scripts')
+   
+    <script src="{{ asset('js/marcas/mostrar_marcas.js') }}"></script>
 
-  // ==== ELIMINAR (fallback: show.bs.modal) ====
-  const modalEliminarEl = document.getElementById('modalEliminar');
-  if (modalEliminarEl) {
-    modalEliminarEl.addEventListener('show.bs.modal', (ev) => {
-      const btn = ev.relatedTarget;
-      if (!btn) return;
-      const id = btn.getAttribute('data-idmarca');
-      const nombre = btn.getAttribute('data-nombre') || '';
-      const f = document.getElementById('formEliminarMarca');
-      const msg = document.getElementById('eliminar_message');
-      const hid = document.getElementById('eliminar_idmarca');
+   
+    @if ($errors->has('nombre'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var modal = new bootstrap.Modal(document.getElementById('modalEditar'));
+            modal.show();
+        });
+    </script>
+    @endif
+@endpush
 
-      if (hid) hid.value = id;
-      if (msg) {
-        msg.innerHTML = `¿Estás seguro de eliminar la marca <strong>${nombre}</strong>? Esta acción no se puede deshacer.`;
-      }
-      if (f) f.action = btn.getAttribute('data-delete-url') || '#';
-    });
-  }
+@push('scripts')
+    {{-- SweetAlert2 (cárgalo una vez en tu layout si prefieres) --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  // Salvaguarda: evita POST incorrecto si faltara action
-  ['formEditarMarca','formEliminarMarca'].forEach(id => {
-    const f = document.getElementById(id);
-    if (f) {
-      f.addEventListener('submit', e => {
-        if (!f.action || f.action.endsWith('#')) {
-          e.preventDefault();
-          alert('No se pudo determinar el destino del formulario.');
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnAyuda = document.getElementById('btn-ayuda');
+      if (!btnAyuda) return;
+
+      btnAyuda.addEventListener('click', async () => {
+        // Paso 0: Portada
+        const steps = [
+          {
+            icon: 'question',
+            title: 'Ayuda rápida',
+            html: `
+              <div class="text-start">
+                <p>Esta pantalla te permite <b>registrar, buscar, editar y eliminar</b> marcas.</p>
+                <ul class="mb-2">
+                  <li><b>Registrar:</b> completa el formulario de la izquierda y pulsa <em>Registrar Marca</em>.</li>
+                  <li><b>Buscar:</b> usa el cuadro <em>Buscar marcas por nombre…</em> y presiona <em>Buscar</em>.</li>
+                  <li><b>Editar:</b> botón azul <em>Editar</em> en la fila.</li>
+                  <li><b>Eliminar:</b> botón rojo <em>Eliminar</em> en la fila (se te pedirá confirmación).</li>
+                </ul>
+                <p class="mb-0"><small>Tip: puedes desplazarte por la tabla cuando hay muchas marcas.</small></p>
+              </div>
+            `,
+            confirmButtonText: 'Siguiente',
+            allowOutsideClick: false
+          },
+          // Paso 1: Registrar
+          {
+            icon: 'info',
+            title: 'Registrar nueva marca',
+            html: `
+              <div class="text-start">
+                <p>En el panel izquierdo:</p>
+                <ol class="mb-0">
+                  <li>Escribe el <b>Nombre de la Marca</b>.</li>
+                  <li>Haz clic en <b>Registrar Marca</b>.</li>
+                </ol>
+              </div>
+            `,
+            confirmButtonText: 'Siguiente',
+            allowOutsideClick: false
+          },
+          // Paso 2: Buscar
+          {
+            icon: 'info',
+            title: 'Buscar marcas',
+            html: `
+              <div class="text-start">
+                <p>En el encabezado de la tabla:</p>
+                <ol class="mb-0">
+                  <li>Escribe el nombre en <b>Buscar marcas por nombre</b>.</li>
+                  <li>Haz clic en <b>Buscar</b>.</li>
+                </ol>
+              </div>
+            `,
+            confirmButtonText: 'Siguiente',
+            allowOutsideClick: false
+          },
+          // Paso 3: Editar / Eliminar
+          {
+            icon: 'info',
+            title: 'Editar / Eliminar',
+            html: `
+              <div class="text-start">
+                <p>En cada fila de la tabla:</p>
+                <ul class="mb-2">
+                  <li><b>Editar:</b> abre el formulario para actualizar el nombre.</li>
+                  <li><b>Eliminar:</b> pide confirmación antes de borrar.</li>
+                </ul>
+                <p class="mb-0"><small>Si no ves acciones, verifica tus permisos.</small></p>
+              </div>
+            `,
+            confirmButtonText: 'Entendido',
+            allowOutsideClick: false
+          }
+        ];
+
+        // Ejecuta el tour como una cola
+        const swalQueue = Swal.mixin({
+          showCancelButton: false,
+          focusConfirm: true,
+          confirmButtonText: 'Siguiente',
+          confirmButtonColor: '#3085d6',
+          width: 600
+        });
+
+        for (const step of steps) {
+          await swalQueue.fire(step);
         }
       });
-    }
-  });
-});
-
-// Validación AJAX para nombre duplicado al editar
-document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('formEditarMarca');
-    
-  if (form) {
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      // 1. LIMPIAR ERRORES PREVIOS
-      form.querySelectorAll('.text-danger').forEach(el => el.remove());
-
-      // 2. OBTENER LOS VALORES ACTUALES
-      const nombreActual = document.getElementById('edit_nombre').value;
-      const idmarca = document.getElementById('edit_idmarca').value;
-      
-      console.log('Nombre actual:', nombreActual);
-      console.log('ID marca:', idmarca);
-
-      // 3. BUSCAR EL BOTÓN ORIGINAL PARA OBTENER EL NOMBRE ORIGINAL
-      const botonOriginal = document.querySelector('.btn-open-edit[data-idmarca="' + idmarca + '"]');
-      
-      if (!botonOriginal) {
-        console.error('No se encontró el botón original');
-        form.submit();
-        return;
-      }
-
-      const nombreOriginal = botonOriginal.dataset.nombre;
-      console.log('Nombre original:', nombreOriginal);
-
-      // 4. COMPARAR: ¿EL NOMBRE CAMBIÓ?
-      if (nombreActual === nombreOriginal) {
-        console.log('Nombre no cambió - Enviando formulario directamente');
-        form.submit();
-      } else {
-        console.log('Nombre cambió - Validando con AJAX...');
-        
-        // 5. VALIDAR CON AJAX SOLO SI CAMBIÓ
-        fetch("{{ route('marcas.validar') }}", {
-          method: 'POST',
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": "{{ csrf_token() }}"
-          },
-          body: JSON.stringify({ 
-            nombre: nombreActual, 
-            idmarca: idmarca 
-          })
-        })
-        .then(res => {
-          console.log('Respuesta del servidor recibida');
-          return res.json();
-        })
-        .then(data => {
-          console.log('Datos recibidos:', data);
-          
-          if (data.duplicado) {
-            console.log('Nombre duplicado encontrado');
-            // Mostrar error debajo del input
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'text-danger small mt-1';
-            errorDiv.textContent = 'La marca ya ha sido registrada.';
-            document.getElementById('edit_nombre').after(errorDiv);
-          } else {
-            console.log('Nombre disponible - Enviando formulario');
-            form.submit();
-          }
-        })
-        .catch(error => {
-          console.error('Error en la validación:', error);
-          console.log('Enviando formulario a pesar del error');
-          form.submit();
-        });
-      }
     });
-  }
-});
-</script>
-
-
-@if ($errors->has('nombre'))
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var modal = new bootstrap.Modal(document.getElementById('modalEditar'));
-    modal.show();
-  });
-</script>
-@endif
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const modalEditar = document.getElementById('modalEditar');
-  if (modalEditar) {
-    modalEditar.addEventListener('hide.bs.modal', function () {
-      // Oculta los mensajes de error al cerrar el modal
-      document.querySelectorAll('#modalEditar .text-danger').forEach(el => el.style.display = 'none');
-    });
-  }
-});
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('formRegistro');
-  if (!form) return;
-
-  const nombreInput = document.getElementById('nombre');
-  
-  // Validación en tiempo real
-  nombreInput.addEventListener('input', function() {
-    if (nombreInput.value.trim() === '') {
-      nombreInput.classList.add('is-invalid');
-    } else {
-      nombreInput.classList.remove('is-invalid');
-    }
-  });
-
-  // Validación al enviar
-  form.addEventListener('submit', function(e) {
-    if (nombreInput.value.trim() === '') {
-      e.preventDefault();
-      nombreInput.classList.add('is-invalid');
-      nombreInput.focus();
-    }
-  });
-});
-</script>
-@endsection
+    </script>
+@endpush
